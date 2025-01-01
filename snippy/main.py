@@ -462,7 +462,8 @@ def main():
 
             subprocess.run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
-        print("\nSay Good bye to snippy. Bye Bye!")
+        sys.stdout.write("\nSay Good bye to snippy. Bye Bye!\n")
+        sys.stdout.flush()
         sys.exit(0)
 
 
