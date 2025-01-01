@@ -22,11 +22,17 @@ def emojize_if_valid(emoji_code):
         return emoji_code
 
 
-def select_commit_type(commit_types, show_add_new=False, show_delete=False):
+def select_commit_type(commit_types, include_type=True, include_emoji=True, show_add_new=False, show_delete=False):
     print("Select commit type:")
     print("-" * 40)
     for idx, (commit_type, emoji_code) in enumerate(commit_types.items()):
-        print(f"{idx + 1}. {commit_type} ({emojize_if_valid(emoji_code)})")
+        base_type = commit_type.split('_')[0]
+        if include_type and include_emoji:
+            print(f"{idx + 1}. {base_type} ({emojize_if_valid(emoji_code)})")
+        elif include_type:
+            print(f"{idx + 1}. {base_type}")
+        elif include_emoji:
+            print(f"{idx + 1}. {emojize_if_valid(emoji_code)}")
     if show_add_new:
         print(f"a. + Add a new type")
     if show_delete:
@@ -69,6 +75,25 @@ def reset_config():
 
 
 def configure_template(config):
+    if config["commit_types"]:
+        first_commit_type = next(iter(config["commit_types"].items()))
+        example_commit = config["commit_template"]
+        include_type = config.get("include_type", True)
+        include_emoji = config.get("include_emoji", True)
+        if include_type:
+            example_commit = example_commit.replace("<type>", first_commit_type[0])
+        else:
+            example_commit = example_commit.replace("<type>", "")
+        if include_emoji:
+            example_commit = example_commit.replace("<emoji>", emojize_if_valid(first_commit_type[1]))
+        else:
+            example_commit = example_commit.replace("<emoji>", "")
+        example_commit = example_commit.replace("<subject>", "This is example comment.")
+    if config.get("include_emoji", True):
+        example_commit = example_commit.replace("<emoji>", emojize_if_valid(first_commit_type[1]))
+    else:
+        example_commit = example_commit.replace("<emoji>", "")
+    example_commit = example_commit.replace("<subject>", "This is example comment.")
     while True:
         show_current_template(config)
         choice = get_input("\033[1;34mDo you want to configure (o)ptions or comment (t)emplate, or 'b' to go back:\033[0m ").lower()
@@ -97,12 +122,10 @@ def configure_template(config):
             config["commit_template"] = commit_template
             save_config(config)
         elif choice == "t":
-            print(f"Template:")
-            print(f"  {config.get('commit_template')}")
-            print(f"Options:")
-            print(f"(<emoji> is {'on' if config.get('include_emoji', True) else 'off'}, <type> is {'on' if config.get('include_type', True) else 'off'}")
+            print(f"Template: ")
+            print(f"  {config['commit_template']} (e.g: {example_commit})")
             new_template = get_input(
-                f"\033[1;34mEnter new commit template (use {'<type>' if config.get('include_type', True) else ''}, {'<emoji>' if config.get('include_emoji', True) else ''}, and <subject>, or 'b' to go back):\033[0m "
+                f"\033[1;34mEnter new commit template (use {'<type>,' if config.get('include_type', True) else ''} {'<emoji>,' if config.get('include_emoji', True) else ''} and <subject>, or 'b' to go back):\033[0m "
             )
             if new_template == "b":
                 continue
@@ -133,28 +156,27 @@ def configure_commit_types(config):
     include_type = config.get("include_type", True)
     while True:
         if not include_type and not include_emoji:
-            print("Select commit type: <type> is \033[1;31moff\033[0m. <emoji> is \033[1;31moff\033[0m.")
             for idx, (commit_type, emoji_code) in enumerate(config["commit_types"].items()):
-                print(f"{idx + 1}. {commit_type} ({emojize_if_valid(emoji_code)})")
+                print(f"{idx + 1}. {commit_type.split('_')[0]} ({emojize_if_valid(emoji_code)})")
             print("a. + Add a new type")
             print("d. - Delete a type")
             print("\033[1;33mNote: You can still modify existing commit types, but they won't be used in the template.\033[0m")
         elif include_type and not include_emoji:
-            print("Select commit type: <type> is \033[1;32mon\033[0m. <emoji> is \033[1;31moff\033[0m.")
+            print("Options: <type> is \033[1;32mon\033[0m. <emoji> is \033[1;31moff\033[0m.")
             for idx, (commit_type, emoji_code) in enumerate(config["commit_types"].items()):
-                print(f"{idx + 1}. {commit_type} ({emojize_if_valid(emoji_code)})")
+                print(f"{idx + 1}. {commit_type.split('_')[0]} ({emojize_if_valid(emoji_code)})")
             print("a. + Add a new type")
             print("d. - Delete a type")
             print("\033[1;33mNote: You can still modify existing commit types, but emojis won't be used in the template.\033[0m")
         elif not include_type and include_emoji:
-            print("Select commit type: <type> is \033[1;31moff\033[0m. <emoji> is \033[1;32mon\033[0m.")
+            print("Options: <type> is \033[1;31moff\033[0m. <emoji> is \033[1;32mon\033[0m.")
             for idx, (commit_type, emoji_code) in enumerate(config["commit_types"].items()):
-                print(f"{idx + 1}. {commit_type} ({emojize_if_valid(emoji_code)})")
+                print(f"{idx + 1}. {commit_type.split('_')[0]} ({emojize_if_valid(emoji_code)})")
             print("a. + Add a new type")
             print("d. - Delete a type")
             print("\033[1;33mNote: You can still modify existing commit types, but they won't be used in the template.\033[0m")
         else:
-            print("Select commit type: <type> is \033[1;32mon\033[0m. <emoji> is \033[1;32mon\033[0m.")
+            print("Options: <type> is \033[1;32mon\033[0m. <emoji> is \033[1;32mon\033[0m.")
             select_commit_type(config["commit_types"], show_add_new=True, show_delete=True)
 
         option = get_input(
@@ -170,8 +192,17 @@ def configure_commit_types(config):
                     break
                 else:
                     print("Emoji must be in :emoji: format.")
+            if type_key in config["commit_types"]:
+
+                suffix = 1
+                new_type_key = f"{type_key}_{suffix}"
+                while new_type_key in config["commit_types"]:
+                    suffix += 1
+                    new_type_key = f"{type_key}_{suffix}"
+                type_key = new_type_key
             config["commit_types"][type_key] = new_emoji
-            print(f"Added new type: {type_key} with emoji: {emojize_if_valid(new_emoji)}")
+            print(f"Added new type: {type_key.split('_')[0]} with emoji: {emojize_if_valid(new_emoji)}")
+            print()
         elif option == "d":
             while True:
                 delete_option = get_input("\033[1;34mEnter the number of the commit type to delete (or 'b' to go back):\033[0m ")
@@ -181,10 +212,10 @@ def configure_commit_types(config):
                     delete_option = int(delete_option)
                     if 1 <= delete_option <= len(config["commit_types"]):
                         type_key = list(config["commit_types"].keys())[delete_option - 1]
-                        confirm = get_input(f"\033[1;34mAre you sure you want to delete '{type_key}'? (Y/n):\033[0m ").lower()
+                        confirm = get_input(f"\033[1;34mAre you sure you want to delete '{type_key.split('_')[0]}'? (Y/n):\033[0m ").lower()
                         if confirm in ["", "y", "yes"]:
                             del config["commit_types"][type_key]
-                            print(f"Deleted commit type '{type_key}'.")
+                            print(f"Deleted commit type '{type_key.split('_')[0]}'.")
                         else:
                             print("Deletion cancelled.")
                         break
@@ -197,16 +228,16 @@ def configure_commit_types(config):
                 option = int(option)
                 if 1 <= option <= len(config["commit_types"]):
                     type_key = list(config["commit_types"].keys())[option - 1]
-                    print(f"Editing commit type: \033[1;34m{type_key}\033[0m ({emojize_if_valid(config['commit_types'][type_key])})")
-                    new_type = get_input(f"\033[1;34mEnter new name for \033[1;32m{type_key}\033[1;34m (leave empty to keep the current name):\033[0m ")
+                    print(f"Editing commit type: \033[1;34m{type_key.split('_')[0]}\033[0m ({emojize_if_valid(config['commit_types'][type_key])})")
+                    new_type = get_input(f"\033[1;34mEnter new name for \033[1;32m{type_key.split('_')[0]}\033[1;34m (leave empty to keep the current name):\033[0m ")
                     if new_type:
                         config["commit_types"][new_type] = config["commit_types"].pop(type_key)
                         type_key = new_type
-                        print(f"Updated commit type name to: {type_key}")
+                        print(f"Updated commit type name to: {type_key.split('_')[0]}")
                     else:
                         print("Commit type name unchanged.")
                     while True:
-                        new_emoji = get_input(f"\033[1;34mEnter new emoji for \033[1;32m{type_key}\033[1;34m (current: {emojize_if_valid(config['commit_types'][type_key])}) (use :emoji: format, leave empty to keep current, type 'remove' to delete):\033[0m ")
+                        new_emoji = get_input(f"\033[1;34mEnter new emoji for \033[1;32m{type_key.split('_')[0]}\033[1;34m (current: {emojize_if_valid(config['commit_types'][type_key])}) (use :emoji: format, leave empty to keep current, type 'remove' to delete):\033[0m ")
                         if new_emoji.lower() == "remove":
                             config["commit_types"][type_key] = ""
                             print("Commit Type Emoji removed.")
@@ -216,7 +247,7 @@ def configure_commit_types(config):
                             break
                         elif new_emoji.startswith(":") and new_emoji.endswith(":"):
                             config["commit_types"][type_key] = new_emoji
-                            print(f"Updated {type_key} to {emojize_if_valid(new_emoji)}")
+                            print(f"Updated {type_key.split('_')[0]} to {emojize_if_valid(new_emoji)}")
                             break
                         else:
                             print("Invalid emoji format. Must be in :emoji: format.")
@@ -252,15 +283,17 @@ def show_current_configuration(config):
 
     print(f"Template: ")
     print(f"  {config['commit_template']} (e.g: {example_commit})")
+    print()
     print(f"Commit types:")
     print(f"  <emoji> option is {emoji_status}")
     print(f"  <type> option is {type_status}")
+    print()
     if include_type and include_emoji:
         for commit_type, emoji_code in config["commit_types"].items():
-            print(f"  {commit_type}: {emojize_if_valid(emoji_code)}")
+            print(f"  {commit_type.split('_')[0]}: {emojize_if_valid(emoji_code)}")
     elif include_type:
         for commit_type in config["commit_types"].keys():
-            print(f"  {commit_type}")
+            print(f"  {commit_type.split('_')[0]}")
     elif include_emoji:
         for emoji_code in config["commit_types"].values():
             print(f"  {emojize_if_valid(emoji_code)}")
@@ -338,8 +371,42 @@ def main():
             commit_template = config.get("commit_template")
             commit_types = config.get("commit_types")
 
-            commit_type_selection = select_commit_type(commit_types)
-            commit_type, emoji_code = commit_type_selection
+            first_commit_type = next(iter(commit_types.items()))
+            example_commit = commit_template.replace("<type>", first_commit_type[0])
+            if config.get("include_emoji", True):
+                example_commit = example_commit.replace("<emoji>", emojize_if_valid(first_commit_type[1]))
+            else:
+                example_commit = example_commit.replace("<emoji>", "")
+            example_commit = example_commit.replace("<subject>", "This is example comment.")
+            print(f"Template: ")
+            print(f"  {commit_template} (e.g: {example_commit})")
+
+            include_type = config.get("include_type", True)
+            include_emoji = config.get("include_emoji", True)
+
+            if include_type and include_emoji:
+                commit_type_selection = select_commit_type(commit_types, include_type, include_emoji)
+                option = get_input("\033[1;34mChoose an option or enter number to select a type:\033[0m ").lower()
+                if commit_type_selection is None:
+                    print("No commit type selected. Exiting.")
+                    sys.exit(1)
+                commit_type, emoji_code = commit_type_selection
+            elif include_type:
+                commit_type_selection = select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
+                if commit_type_selection is None:
+                    print("No commit type selected. Exiting.")
+                    sys.exit(1)
+                commit_type, _ = commit_type_selection
+                emoji_code = ""
+            elif include_emoji:
+                commit_type_selection = select_commit_type({k: v for k, v in commit_types.items()}, False, include_emoji)
+                if commit_type_selection is None:
+                    print("No commit type selected. Exiting.")
+                    sys.exit(1)
+                commit_type, emoji_code = commit_type_selection
+            else:
+                commit_type = ""
+                emoji_code = ""
 
             subject = get_input("\033[1;32mEnter commit message:\033[0m ")
 
@@ -351,9 +418,8 @@ def main():
 
             subprocess.run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
-        print(f"\nOperation cancelled. Bye Bye {emojize_if_valid(':waves:')}")
+        print(f"\nSay Good bye to snippy. Bye Bye {emojize_if_valid(':wave:')}")
         sys.exit(0)
-
 
 if __name__ == "__main__":
     main()
