@@ -449,7 +449,7 @@ def main():
 
             subprocess.run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
-        print(f"\nSay Good bye to snippy. Bye Bye {emojize_if_valid(':wave:')}")
+        print("\nSay Good bye to snippy. Bye Bye!")
         sys.exit(0)
 
 
