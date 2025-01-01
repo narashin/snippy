@@ -1,15 +1,15 @@
 class Snippy < Formula
-    desc "CLI tool for Git commit templates with emoji support"
-    homepage "https://github.com/narashin/snippy"
-    url "https://github.com/narashin/snippy/releases/download/v0.1/snippy"
-    sha256 "4952ecbe6dee6ec00664e19839743f9f4946dea91fc4a9007ae3d2b8505fbf83"
-    license "MIT
+  desc "CLI tool for Git commit templates with emoji support"
+  homepage "https://github.com/narashin/snippy"
+  url "https://github.com/narashin/snippy/releases/download/v0.3/snippy"
+  sha256 "10d61d5f0e106b06cf85baa2a98e961a94777d743f664403e6c575949b9308ef"
+  license "MIT"
 
-    def install
-      bin.install "snippy"
-    end
+  def install
+    bin.install "snippy"
+  end
 
-    test do
-      system "#{bin}/snippy", "--help"
-    end
+  test do
+    system "#{bin}/snippy", "--help"
+  end
   end
