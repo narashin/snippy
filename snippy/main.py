@@ -8,10 +8,14 @@ import emoji
 
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
 
-def get_input(prompt):
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    return sys.stdin.buffer.readline().decode("utf-8", "ignore").strip()
+def get_input(prompt: str) -> str:
+    try:
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
+        return sys.stdin.buffer.readline().decode("utf-8", "ignore").strip()
+    except KeyboardInterrupt:
+        sys.stdout.flush()
+        raise
 
 
 def emojize_if_valid(emoji_code):
@@ -462,9 +466,14 @@ def main():
 
             subprocess.run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
-        sys.stdout.write("\nSay Good bye to snippy. Bye Bye!\n")
-        sys.stdout.flush()
-        sys.exit(0)
+        try:
+            print("\nSay Good bye to snippy. Bye Bye!")
+            sys.stdout.flush()
+            sys.exit(0)
+        except KeyboardInterrupt:
+            sys.stderr.write("")
+            sys.stderr.flush()
+            sys.exit(1)
 
 
 if __name__ == "__main__":
