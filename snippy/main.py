@@ -384,29 +384,29 @@ def main():
             include_type = config.get("include_type", True)
             include_emoji = config.get("include_emoji", True)
 
+            commit_type = ""
+            emoji_code = ""
+
             if include_type and include_emoji:
-                commit_type_selection = select_commit_type(commit_types, include_type, include_emoji)
-                option = get_input("\033[1;34mChoose an option or enter number to select a type:\033[0m ").lower()
-                if commit_type_selection is None:
-                    print("No commit type selected. Exiting.")
-                    sys.exit(1)
-                commit_type, emoji_code = commit_type_selection
+                select_commit_type(commit_types, include_type, include_emoji)
             elif include_type:
-                commit_type_selection = select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
-                if commit_type_selection is None:
-                    print("No commit type selected. Exiting.")
-                    sys.exit(1)
-                commit_type, _ = commit_type_selection
-                emoji_code = ""
+                select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
             elif include_emoji:
-                commit_type_selection = select_commit_type({k: v for k, v in commit_types.items()}, False, include_emoji)
-                if commit_type_selection is None:
-                    print("No commit type selected. Exiting.")
+                select_commit_type({k: v for k, v in commit_types.items()}, False, include_emoji)
+
+            if include_type or include_emoji:
+                option = get_input("\033[1;34mChoose an option or enter number to select a type (or 'b' to go back):\033[0m ").lower()
+                if option.isdigit():
+                    option = int(option)
+                    if 1 <= option <= len(commit_types):
+                        commit_type = list(commit_types.keys())[option - 1]
+                        emoji_code = commit_types[commit_type]
+                    else:
+                        print("Invalid option. Exiting.")
+                        sys.exit(1)
+                else:
+                    print("Invalid option. Exiting.")
                     sys.exit(1)
-                commit_type, emoji_code = commit_type_selection
-            else:
-                commit_type = ""
-                emoji_code = ""
 
             subject = get_input("\033[1;32mEnter commit message:\033[0m ")
 
