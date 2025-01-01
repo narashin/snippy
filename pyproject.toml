@@ -1,0 +1,27 @@
+[tool.black]
+line-length = 100
+target-version = ["py312"] # Python 버전에 맞게 변경 가능
+skip-string-normalization = false
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "C", "I"]                                # 기본적으로 PEP8 검사 활성화
+ignore = ["E203", "E501", "C901", "COM812"]                                                      # 무시할 규칙은 여기에 추가
+exclude = [".venv", ".git", "build", "dist", "__pycache__", "*.egg-info"]                                                    # 자동 수정 가능 오류
+unfixable = []
