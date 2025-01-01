@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from utils import emojize_if_valid, get_input
+from snippy.utils import emojize_if_valid, get_input
 
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
 
@@ -375,7 +375,7 @@ def show_current_template(config):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Commit Wizard CLI Tool")
+    parser = argparse.ArgumentParser(description="Snippy! Templatize your git commit comments. <3")
     parser.add_argument("--config", action="store_true", help="Configure commit template and types")
     parser.add_argument(
         "--reset", action="store_true", help="Reset configuration to default values"

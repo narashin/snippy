@@ -64,3 +64,5 @@ htmlcov/
 # Logs and temporary files
 *.log
 *.tmp
+
+build.sh

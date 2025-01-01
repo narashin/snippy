@@ -25,3 +25,10 @@ select = ["E", "F", "W", "C", "I"]                                # 기본적으
 ignore = ["E203", "E501", "C901", "COM812"]                                                      # 무시할 규칙은 여기에 추가
 exclude = [".venv", ".git", "build", "dist", "__pycache__", "*.egg-info"]                                                    # 자동 수정 가능 오류
 unfixable = []
+
+[build-system]
+requires = ["pyinstaller"]
+
+[tool.pyinstaller]
+paths = ["snippy"]
+exclude = ["__pycache__"]
