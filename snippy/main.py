@@ -4,9 +4,22 @@ import os
 import subprocess
 import sys
 
-from snippy.utils import emojize_if_valid, get_input
+import emoji
 
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
+
+def get_input(prompt):
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    return sys.stdin.buffer.readline().decode("utf-8", "ignore").strip()
+
+
+def emojize_if_valid(emoji_code):
+    try:
+        return emoji.emojize(emoji_code, language="alias")
+    except KeyError:
+        return emoji_code
+
 
 def get_default_config():
     return {
