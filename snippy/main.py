@@ -189,7 +189,7 @@ def configure_template(config):
                 print(f"<type> set to {'on' if include_type else 'off'}")
             else:
                 print("Invalid option. Please choose '1', '2', or 'b'.")
-            # Update commit_template based on the toggled options
+
             commit_template = "<type>: <emoji> <subject>"
             if not config.get("include_type", True):
                 commit_template = commit_template.replace("<type>: ", "")
