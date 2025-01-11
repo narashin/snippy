@@ -67,4 +67,8 @@ htmlcov/
 
 build.sh
 
-#test
+.ruff_cache/
+build/
+dist/
+run_snippy.sh
+snippy-*.tar.gz

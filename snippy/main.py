@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import time
 
 import click
 
@@ -434,8 +435,16 @@ def reset_command():
 @cli.command()
 def run():
     try:
-        config = run_async(load_config_async)
+        start_time = time.time()
 
+        # 설정 로드
+        config_start = time.time()
+        config = run_async(load_config_async)
+        config_end = time.time()
+        click.echo(f"Config load time: {config_end - config_start:.2f} seconds")
+
+        # 커밋 템플릿 생성
+        template_start = time.time()
         commit_template = config.get("commit_template")
         commit_types = config.get("commit_types")
 
@@ -451,7 +460,11 @@ def run():
         click.echo("Template:")
         click.echo(f"  {commit_template} (e.g: {example_commit})")
         click.echo()
+        template_end = time.time()
+        click.echo(f"Template render time: {template_end - template_start:.2f} seconds")
 
+        # 커밋 타입 선택
+        select_start = time.time()
         include_type = config.get("include_type", True)
         include_emoji = config.get("include_emoji", True)
 
@@ -464,7 +477,11 @@ def run():
             select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
         elif include_emoji:
             select_commit_type(dict(commit_types.items()), False, include_emoji)
+        select_end = time.time()
+        click.echo(f"Select commit type time: {select_end - select_start:.2f} seconds")
 
+        # 사용자 입력 처리
+        input_start = time.time()
         if include_type or include_emoji:
             option = get_input(
                 "\033[1;34mChoose an option or enter number to select a type:\033[0m "
@@ -480,7 +497,11 @@ def run():
             else:
                 click.echo("Invalid option. Exiting.")
                 sys.exit(1)
+        input_end = time.time()
+        click.echo(f"User input time: {input_end - input_start:.2f} seconds")
 
+        # 커밋 메시지 입력
+        subject_start = time.time()
         subject = get_input("\033[1;32mEnter commit message:\033[0m ")
 
         commit_message = commit_template.replace("<type>", commit_type).replace(
@@ -490,8 +511,18 @@ def run():
             commit_message = commit_message.replace("<emoji>", emojize_if_valid(emoji_code))
         else:
             commit_message = commit_message.replace("<emoji>", "")
+        subject_end = time.time()
+        click.echo(f"Commit message creation time: {subject_end - subject_start:.2f} seconds")
 
+        # Git 커밋 실행
+        git_start = time.time()
         get_subprocess_module().run(["git", "commit", "-m", commit_message])
+        git_end = time.time()
+        click.echo(f"Git commit execution time: {git_end - git_start:.2f} seconds")
+
+        end_time = time.time()
+        click.echo(f"Total execution time: {end_time - start_time:.2f} seconds")
+
     except KeyboardInterrupt:
         click.echo("\nSay Good bye to Snippy. Bye Bye!", err=True)
         raise click.Abort()

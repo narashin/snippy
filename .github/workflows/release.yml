@@ -1,0 +1,47 @@
+name: Build and Release Snippy
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pyinstaller
+
+      - name: Build Snippy
+        run: |
+          pyinstaller snippy/main.py --name snippy --collect-all snippy --collect-data emoji --onedir --clean
+          cd dist/snippy
+          tar -czvf ../../snippy-${GITHUB_REF##*/}.tar.gz *
+
+      - name: Calculate SHA256
+        id: sha256
+        run: shasum -a 256 snippy-${GITHUB_REF##*/}.tar.gz | awk '{ print $1 }'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: snippy-${GITHUB_REF##*/}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Homebrew Formula Update
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}
+          repository: narashin/homebrew-snippy
+          event-type: update-formula
+          client-payload: '{"version": "${GITHUB_REF##*/}", "sha256": "${{ steps.sha256.outputs.sha256 }}"}'
