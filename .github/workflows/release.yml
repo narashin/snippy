@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Check out repository
@@ -25,8 +25,7 @@ jobs:
         run: |
           pyinstaller snippy/main.py --name snippy --collect-all snippy --collect-data emoji --onedir --clean
           cd dist/snippy
-          chmod +x snippy
-          tar --mode='a+rx' -czvf ../../snippy-${{ github.ref_name }}.tar.gz *
+          tar -czvf ../../snippy-${{ github.ref_name }}.tar.gz *
 
       - name: Calculate SHA256
         id: sha256
@@ -66,8 +65,13 @@ jobs:
           cd homebrew-snippy
           echo "Updating Formula with SHA256: ${{ steps.sha256.outputs.sha256 }}"
 
-          sed -i "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.tar.gz\"|" Formula/snippy.rb
-          sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.tar.gz\"|" Formula/snippy.rb
+            sed -i '' "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
+          else
+            sed -i "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.tar.gz\"|" Formula/snippy.rb
+            sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
+          fi
 
           git config user.name "narashin"
           git config user.email "me@nara.dev"
