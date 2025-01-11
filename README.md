@@ -65,4 +65,4 @@ GitHub 저장소 / GitHub repository: https://github.com/narashin/homebrew-snipp
 ## 라이선스 / License
 Snippy는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 LICENSE 파일을 참조하세요.
 
-Snippy is distributed under the MIT license. See the LICENSE file for more details. 
+Snippy is distributed under the MIT license. See the LICENSE file for more details.
