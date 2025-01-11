@@ -31,12 +31,30 @@ jobs:
         id: sha256
         run: shasum -a 256 snippy-${{ github.ref_name }}.tar.gz | awk '{ print $1 }'
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: snippy-${{ github.ref_name }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}
+      - name: Create Release in Formula Repository
+        run: |
+          curl \
+            -X POST \
+            -H "Authorization: token ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/narashin/homebrew-snippy/releases \
+            -d '{
+              "tag_name": "${{ github.ref_name }}",
+              "name": "${{ github.ref_name }}",
+              "body": "Automated release by GitHub Actions",
+              "draft": false,
+              "prerelease": false
+            }'
+
+      - name: Upload Asset to Release
+        run: |
+          release_id=$(curl -H "Authorization: token ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}" https://api.github.com/repos/narashin/homebrew-snippy/releases/tags/${{ github.ref_name }} | jq -r '.id')
+          curl \
+            -X POST \
+            -H "Authorization: token ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @snippy-${{ github.ref_name }}.tar.gz \
+            https://uploads.github.com/repos/narashin/homebrew-snippy/releases/$release_id/assets?name=snippy-${{ github.ref_name }}.tar.gz
 
       - name: Trigger Homebrew Formula Update
         uses: peter-evans/repository-dispatch@v2
