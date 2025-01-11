@@ -71,4 +71,3 @@ build.sh
 build/
 dist/
 run_snippy.sh
-snippy-*.tar.gz
