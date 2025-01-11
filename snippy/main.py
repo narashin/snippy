@@ -1,21 +1,15 @@
-import argparse
+import asyncio
 import json
 import os
-import subprocess
 import sys
+
+import click
 
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
 
-def get_input(prompt: str) -> str:
-    try:
-        sys.stdout.write(prompt)
-        sys.stdout.flush()
-        return sys.stdin.buffer.readline().decode("utf-8", "ignore").strip()
-    except KeyboardInterrupt:
-        sys.stdout.flush()
-        raise
 
 def get_subprocess_module():
+    import subprocess
     return subprocess
 
 _emoji = None
@@ -33,20 +27,37 @@ def emojize_if_valid(emoji_code):
     except KeyError:
         return emoji_code
 
+def emojize_commit_types(commit_types):
+    emoji = get_emoji_module()
+    return {key: emoji.emojize(value, language="alias") for key, value in commit_types.items()}
+
+raw_commit_types = {
+    "feat": ":sparkles:",
+    "fix": ":bug:",
+    "docs": ":memo:",
+    "style": ":lipstick:",
+    "refactor": ":recycle:",
+    "perf": ":zap:",
+    "test": ":white_check_mark:",
+    "chore": ":wrench:"
+}
+
+def run_async(func, *args, **kwargs):
+    return asyncio.run(func(*args, **kwargs))
+
+def get_input(prompt: str) -> str:
+    try:
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
+        return sys.stdin.buffer.readline().decode("utf-8", "ignore").strip()
+    except KeyboardInterrupt:
+        sys.stdout.flush()
+        raise
 
 def get_default_config():
     return {
         "commit_template": "<type>: <emoji> <subject>",
-        "commit_types": {
-            "feat": ":sparkles:",
-            "fix": ":bug:",
-            "docs": ":memo:",
-            "style": ":lipstick:",
-            "refactor": ":recycle:",
-            "perf": ":zap:",
-            "test": ":white_check_mark:",
-            "chore": ":wrench:"
-        }
+        "commit_types": emojize_commit_types(raw_commit_types),
     }
 
 async def load_config_async():
@@ -64,7 +75,6 @@ def save_config(config):
 def reset_config():
     default_config = get_default_config()
     save_config(default_config)
-    print("Configuration has been reset to default values.")
 
 def configure(config):
     while True:
@@ -80,7 +90,7 @@ def configure(config):
             configure_commit_types(config)
         elif option == "r":
             reset_config()
-            config = load_config_async()
+            config = run_async(load_config_async)
         else:
             print("Invalid option. Please choose 't', 'c', 'r', or 'q'.")
     save_config(config)
@@ -227,16 +237,7 @@ def configure_template(config):
 
 def configure_commit_types(config):
     if "commit_types" not in config:
-        config["commit_types"] = {
-            "feat": ":sparkles:",
-            "fix": ":bug:",
-            "docs": ":memo:",
-            "style": ":lipstick:",
-            "refactor": ":recycle:",
-            "perf": ":zap:",
-            "test": ":white_check_mark:",
-            "chore": ":wrench:",
-        }
+        config["commit_types"] = emojize_commit_types(raw_commit_types)
     include_emoji = config.get("include_emoji", True)
     include_type = config.get("include_type", True)
     while True:
@@ -363,7 +364,7 @@ def configure_commit_types(config):
             except ValueError:
                 print("Invalid input. Please enter a number.")
         save_config(config)
-        config = load_config_async()
+        config = run_async(load_config_async)
 
 
 def show_current_template(config):
@@ -400,90 +401,104 @@ def show_current_template(config):
         print("-" * 40)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Snippy! Templatize your git commit comments. <3")
-    parser.add_argument("--config", action="store_true", help="Configure commit template and types")
-    parser.add_argument(
-        "--reset", action="store_true", help="Reset configuration to default values"
-    )
-    args = parser.parse_args()
+@click.group(invoke_without_command=True)
+@click.option("--config", is_flag=True, help="Configure commit template and types.")
+@click.option("--reset", is_flag=True, help="Reset configuration to default values.")
+@click.pass_context
+def cli(ctx, config, reset):
+    """Snippy! Templatize your git commit comments. <3"""
+    if config:
+        ctx.invoke(config_command)
+        ctx.exit()
 
-    if args.reset:
-        reset_config()
-        sys.exit(0)
+    if reset:
+        ctx.invoke(reset_command)
+        ctx.exit()
 
-    config = load_config_async()
+    if ctx.invoked_subcommand is None:
+        run()
 
+@cli.command(name="config")
+def config_command():
+    """Configure commit template and types."""
+    config = run_async(load_config_async)
+    configure(config)
+
+@cli.command(name="reset")
+def reset_command():
+    """Reset configuration to default values."""
+    reset_config()
+    click.echo("Configuration reset to default values.")
+
+
+@cli.command()
+def run():
     try:
-        if args.config:
-            configure(config)
-        else:
-            commit_template = config.get("commit_template")
-            commit_types = config.get("commit_types")
+        config = run_async(load_config_async)
 
-            first_commit_type = next(iter(commit_types.items()))
-            example_commit = commit_template.replace("<type>", first_commit_type[0])
-            if config.get("include_emoji", True):
-                example_commit = example_commit.replace(
-                    "<emoji>", emojize_if_valid(first_commit_type[1])
-                )
-            else:
-                example_commit = example_commit.replace("<emoji>", "")
-            example_commit = example_commit.replace("<subject>", "This is example comment.")
-            print("Template: ")
-            print(f"  {commit_template} (e.g: {example_commit})")
-            print()
+        commit_template = config.get("commit_template")
+        commit_types = config.get("commit_types")
 
-            include_type = config.get("include_type", True)
-            include_emoji = config.get("include_emoji", True)
-
-            commit_type = ""
-            emoji_code = ""
-
-            if include_type and include_emoji:
-                select_commit_type(commit_types, include_type, include_emoji)
-            elif include_type:
-                select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
-            elif include_emoji:
-                select_commit_type(dict(commit_types.items()), False, include_emoji)
-
-            if include_type or include_emoji:
-                option = get_input(
-                    "\033[1;34mChoose an option or enter number to select a type:\033[0m "
-                ).lower()
-                if option.isdigit():
-                    option = int(option)
-                    if 1 <= option <= len(commit_types):
-                        commit_type = list(commit_types.keys())[option - 1]
-                        emoji_code = commit_types[commit_type]
-                    else:
-                        print("Invalid option. Exiting.")
-                        sys.exit(1)
-                else:
-                    print("Invalid option. Exiting.")
-                    sys.exit(1)
-
-            subject = get_input("\033[1;32mEnter commit message:\033[0m ")
-
-            commit_message = commit_template.replace("<type>", commit_type).replace(
-                "<subject>", subject
+        first_commit_type = next(iter(commit_types.items()))
+        example_commit = commit_template.replace("<type>", first_commit_type[0])
+        if config.get("include_emoji", True):
+            example_commit = example_commit.replace(
+                "<emoji>", emojize_if_valid(first_commit_type[1])
             )
-            if "<emoji>" in commit_template:
-                commit_message = commit_message.replace("<emoji>", emojize_if_valid(emoji_code))
+        else:
+            example_commit = example_commit.replace("<emoji>", "")
+        example_commit = example_commit.replace("<subject>", "This is example comment.")
+        click.echo("Template:")
+        click.echo(f"  {commit_template} (e.g: {example_commit})")
+        click.echo()
+
+        include_type = config.get("include_type", True)
+        include_emoji = config.get("include_emoji", True)
+
+        commit_type = ""
+        emoji_code = ""
+
+        if include_type and include_emoji:
+            select_commit_type(commit_types, include_type, include_emoji)
+        elif include_type:
+            select_commit_type({k: "" for k in commit_types.keys()}, include_type, False)
+        elif include_emoji:
+            select_commit_type(dict(commit_types.items()), False, include_emoji)
+
+        if include_type or include_emoji:
+            option = get_input(
+                "\033[1;34mChoose an option or enter number to select a type:\033[0m "
+            ).lower()
+            if option.isdigit():
+                option = int(option)
+                if 1 <= option <= len(commit_types):
+                    commit_type = list(commit_types.keys())[option - 1]
+                    emoji_code = commit_types[commit_type]
+                else:
+                    click.echo("Invalid option. Exiting.")
+                    sys.exit(1)
             else:
-                commit_message = commit_message.replace("<emoji>", "")
+                click.echo("Invalid option. Exiting.")
+                sys.exit(1)
 
-            get_subprocess_module().run(["git", "commit", "-m", commit_message])
+        subject = get_input("\033[1;32mEnter commit message:\033[0m ")
+
+        commit_message = commit_template.replace("<type>", commit_type).replace(
+            "<subject>", subject
+        )
+        if "<emoji>" in commit_template:
+            commit_message = commit_message.replace("<emoji>", emojize_if_valid(emoji_code))
+        else:
+            commit_message = commit_message.replace("<emoji>", "")
+
+        get_subprocess_module().run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
-        try:
-            print("\nSay Good bye to snippy. Bye Bye!")
-            sys.stdout.flush()
-            sys.exit(0)
-        except KeyboardInterrupt:
-            sys.stderr.write("")
-            sys.stderr.flush()
-            sys.exit(1)
-
+        click.echo("\nSay Good bye to Snippy. Bye Bye!", err=True)
+        raise click.Abort()
 
 if __name__ == "__main__":
-    main()
+    try:
+        cli()
+    except click.Abort:
+        click.echo("\nExecution aborted by user. Exiting... Bye!")
+        sys.exit(1)
