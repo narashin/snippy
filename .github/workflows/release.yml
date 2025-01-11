@@ -25,6 +25,7 @@ jobs:
         run: |
           pyinstaller snippy/main.py --name snippy --collect-all snippy --collect-data emoji --onedir --clean
           cd dist/snippy
+          chmod +x snippy
           tar -czvf ../../snippy-${{ github.ref_name }}.tar.gz *
 
       - name: Calculate SHA256
