@@ -4,8 +4,6 @@ import os
 import subprocess
 import sys
 
-import emoji
-
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
 
 def get_input(prompt: str) -> str:
@@ -17,10 +15,21 @@ def get_input(prompt: str) -> str:
         sys.stdout.flush()
         raise
 
+def get_subprocess_module():
+    return subprocess
+
+_emoji = None
+
+def get_emoji_module():
+    global _emoji
+    if _emoji is None:
+        import emoji
+        _emoji = emoji
+    return _emoji
 
 def emojize_if_valid(emoji_code):
     try:
-        return emoji.emojize(emoji_code, language="alias")
+        return get_emoji_module().emojize(emoji_code, language="alias")
     except KeyError:
         return emoji_code
 
@@ -40,7 +49,7 @@ def get_default_config():
         }
     }
 
-def load_config():
+async def load_config_async():
     try:
         with open(CONFIG_PATH, "r") as file:
             return json.load(file)
@@ -71,7 +80,7 @@ def configure(config):
             configure_commit_types(config)
         elif option == "r":
             reset_config()
-            config = load_config()
+            config = load_config_async()
         else:
             print("Invalid option. Please choose 't', 'c', 'r', or 'q'.")
     save_config(config)
@@ -354,7 +363,7 @@ def configure_commit_types(config):
             except ValueError:
                 print("Invalid input. Please enter a number.")
         save_config(config)
-        config = load_config()
+        config = load_config_async()
 
 
 def show_current_template(config):
@@ -403,7 +412,7 @@ def main():
         reset_config()
         sys.exit(0)
 
-    config = load_config()
+    config = load_config_async()
 
     try:
         if args.config:
@@ -464,7 +473,7 @@ def main():
             else:
                 commit_message = commit_message.replace("<emoji>", "")
 
-            subprocess.run(["git", "commit", "-m", commit_message])
+            get_subprocess_module().run(["git", "commit", "-m", commit_message])
     except KeyboardInterrupt:
         try:
             print("\nSay Good bye to snippy. Bye Bye!")
