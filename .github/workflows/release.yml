@@ -36,7 +36,7 @@ jobs:
         with:
           files: snippy-${{ github.ref_name }}.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}
 
       - name: Trigger Homebrew Formula Update
         uses: peter-evans/repository-dispatch@v2
