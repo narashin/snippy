@@ -65,9 +65,11 @@ htmlcov/
 *.log
 *.tmp
 
-build.sh
-
 .ruff_cache/
+
+# for deployment
+build.sh
 build/
 dist/
 run_snippy.sh
+
