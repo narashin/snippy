@@ -28,7 +28,7 @@ jobs:
       - name: Build Snippy
         run: |
           poetry build
-          cp dist/*.whl snippy-${{ github.ref_name }}.whl
+          cp dist/snippy-${{ github.ref_name }}.whl snippy-${{ github.ref_name }}.whl
 
       - name: Calculate SHA256
         id: sha256
