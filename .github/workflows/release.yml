@@ -26,9 +26,10 @@ jobs:
         run: |
           pyinstaller snippy/main.py \
             --name snippy \
-            --paths $(python -c "import site; print(site.getsitepackages()[0])") \
             --onedir \
             --clean \
+            --strip \
+            --noconsole \
             --collect-all emoji
           tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
