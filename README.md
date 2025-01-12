@@ -17,7 +17,7 @@ Snippy를 사용하여 커밋 메시지를 작성하는 방법은 다음과 같�
 
 To write a commit message using Snippy, follow these steps:
 
-1. Snippy를 실행합니다. / Run Snippy.
+1. Snippy를 실행합니다. / Run Snippy. 
 
 ```
 snippy
