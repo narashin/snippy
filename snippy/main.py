@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import readline
 import sys
 
 import click
@@ -44,59 +45,12 @@ raw_commit_types = {
 def run_async(func, *args, **kwargs):
     return asyncio.run(func(*args, **kwargs))
 
-
-# def get_input(prompt: str) -> str:
-#     try:
-#         sys.stdout.write(prompt)
-#         sys.stdout.flush()
-#         return sys.stdin.buffer.readline().decode("utf-8", "replace").strip()
-#     except KeyboardInterrupt:
-#         sys.stdout.flush()
-#         raise
-
-# def get_input(prompt: str) -> str:
-#     return input(prompt).strip()
-
-# ANSI escape codes for cursor movement
-MOVE_CURSOR_LEFT = "\x1b[2D"  # Move 2 spaces left
-CLEAR_CHAR = "\x1b[2D  \x1b[2D"  # Move 2 spaces left, write space, move left again
-
-def clear_last_char(char):
-    if ord(char) >= 44032 and ord(char) <= 55203:
-        # 완성된 한글은 2칸 폭으로 처리
-        return "\x1b[2D  \x1b[2D"
-    elif ord(char) >= 12593 and ord(char) <= 12643:
-        # 초성/중성/종성 조합 중인 글자는 1칸 폭으로 처리
-        return "\x1b[2D \x1b[2D"
-    else:
-        # 영문/숫자는 1칸 폭으로 처리
-        return "\x1b[1D \x1b[1D"
-
 def get_input(prompt: str) -> str:
+    readline.set_startup_hook(lambda: readline.insert_text(""))
     try:
-        sys.stdout.write(prompt)
-        sys.stdout.flush()
-
-        input_buffer = []
-
-        while True:
-            char = sys.stdin.read(1)
-            if char == "\n":
-                break
-            elif char == "\x7f":  # Handle backspace
-                if input_buffer:
-                    input_buffer.pop()
-                    sys.stdout.write(CLEAR_CHAR)
-                    sys.stdout.flush()
-            else:
-                input_buffer.append(char)
-                sys.stdout.write(char)
-                sys.stdout.flush()
-
-        return ''.join(input_buffer).strip()
-    except KeyboardInterrupt:
-        sys.stdout.flush()
-        raise
+        return input(prompt).strip()
+    finally:
+        readline.set_startup_hook(None)
 
 def get_default_config():
     return {
