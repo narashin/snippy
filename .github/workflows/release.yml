@@ -25,8 +25,7 @@ jobs:
         run: |
           pyinstaller snippy/main.py \
             --name snippy \
-            --collect-all snippy \
-            --collect-all click \
+            --hidden-import click \
             --collect-data emoji \
             --onedir \
             --clean
