@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Snippy
         run: |
-          pyinstaller snippy.spec --clean
+          pyinstaller snippy.spec --additional-hooks-dir=hooks --clean
           tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
       - name: Calculate SHA256
