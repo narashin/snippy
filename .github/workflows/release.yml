@@ -19,19 +19,16 @@ jobs:
           python-version: '3.12.8'
           architecture: 'x64'
 
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: poetry install
 
       - name: Build Snippy
         run: |
-          pyinstaller snippy/main.py \
-            --name snippy \
-            --onedir \
-            --clean \
-            --strip \
-            --noconsole \
-            --collect-all emoji
-          tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
+          poetry build
+          tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist .
 
       - name: Calculate SHA256
         id: sha256

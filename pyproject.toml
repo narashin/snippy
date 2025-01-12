@@ -1,34 +1,18 @@
-[tool.black]
-line-length = 100
-target-version = ["py312"] # Python 버전에 맞게 변경 가능
-skip-string-normalization = false
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+[tool.poetry]
+name = "snippy"
+version = "2.0.0"
+description = ""
+authors = ["nara <me@nara.dev>"]
+readme = "README.md"
 
+[tool.poetry.dependencies]
+python = "^3.12"
+click = "^8.1.8"
+emoji = "^2.14.0"
 
-[tool.ruff]
-line-length = 100
-select = ["E", "F", "W", "C", "I"]                                # 기본적으로 PEP8 검사 활성화
-ignore = ["E203", "E501", "C901", "COM812"]                                                      # 무시할 규칙은 여기에 추가
-exclude = [".venv", ".git", "build", "dist", "__pycache__", "*.egg-info"]                                                    # 자동 수정 가능 오류
-unfixable = []
+[tool.poetry.scripts]
+snippy = "main:cli"
 
 [build-system]
-requires = ["pyinstaller"]
-
-[tool.pyinstaller]
-paths = ["snippy"]
-exclude = ["__pycache__"]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
