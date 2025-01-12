@@ -34,8 +34,7 @@ jobs:
         id: sha256
         run: |
           sha256=$(shasum -a 256 snippy-${{ github.ref_name }}.whl | awk '{ print $1 }')
-          echo "SHA256=$sha256"
-          echo "::set-output name=sha256::$sha256"
+          echo "sha256=$sha256" >> $GITHUB_ENV
 
       - name: Create Release in Formula Repository
         run: |
@@ -66,14 +65,14 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}@github.com/narashin/homebrew-snippy.git
           cd homebrew-snippy
-          echo "Updating Formula with SHA256: ${{ steps.sha256.outputs.sha256 }}"
+          echo "Updating Formula with SHA256: $sha256"
 
           if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.whl\"|" Formula/snippy.rb
-            sed -i '' "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
+            sed -i '' "s|sha256 \".*\"|sha256 \"$sha256\"|" Formula/snippy.rb
           else
             sed -i "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.whl\"|" Formula/snippy.rb
-            sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
+            sed -i "s|sha256 \".*\"|sha256 \"$sha256\"|" Formula/snippy.rb
           fi
 
           git config user.name "narashin"
