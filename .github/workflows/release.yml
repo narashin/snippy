@@ -28,12 +28,12 @@ jobs:
       - name: Build Snippy
         run: |
           poetry build
-          tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist .
+          cp dist/*.whl snippy-${{ github.ref_name }}.whl
 
       - name: Calculate SHA256
         id: sha256
         run: |
-          sha256=$(shasum -a 256 snippy-${{ github.ref_name }}.tar.gz | awk '{ print $1 }')
+          sha256=$(shasum -a 256 snippy-${{ github.ref_name }}.whl | awk '{ print $1 }')
           echo "SHA256=$sha256"
           echo "::set-output name=sha256::$sha256"
 
@@ -59,8 +59,8 @@ jobs:
             -X POST \
             -H "Authorization: token ${{ secrets.FORMULA_REPO_ACCESS_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @snippy-${{ github.ref_name }}.tar.gz \
-            https://uploads.github.com/repos/narashin/homebrew-snippy/releases/$release_id/assets?name=snippy-${{ github.ref_name }}.tar.gz
+            --data-binary @snippy-${{ github.ref_name }}.whl \
+            https://uploads.github.com/repos/narashin/homebrew-snippy/releases/$release_id/assets?name=snippy-${{ github.ref_name }}.whl
 
       - name: Update Formula File
         run: |
@@ -69,10 +69,10 @@ jobs:
           echo "Updating Formula with SHA256: ${{ steps.sha256.outputs.sha256 }}"
 
           if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.tar.gz\"|" Formula/snippy.rb
+            sed -i '' "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.whl\"|" Formula/snippy.rb
             sed -i '' "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
           else
-            sed -i "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.tar.gz\"|" Formula/snippy.rb
+            sed -i "s|url \".*\"|url \"https://github.com/narashin/homebrew-snippy/releases/download/${{ github.ref_name }}/snippy-${{ github.ref_name }}.whl\"|" Formula/snippy.rb
             sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha256.outputs.sha256 }}\"|" Formula/snippy.rb
           fi
 
