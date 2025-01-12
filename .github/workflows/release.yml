@@ -29,6 +29,7 @@ jobs:
             --paths $(python -c "import site; print(site.getsitepackages()[0])") \
             --onedir \
             --clean
+            --add-data "$(python -c 'import emoji; import os; print(os.path.join(os.path.dirname(emoji.__file__), \"unicode_codes\", \"emoji.json\"))'):emoji/unicode_codes"
           tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
       - name: Calculate SHA256
