@@ -1,0 +1,3 @@
+pyinstaller
+click
+emoji
