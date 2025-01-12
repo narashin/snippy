@@ -54,8 +54,34 @@ def run_async(func, *args, **kwargs):
 #         sys.stdout.flush()
 #         raise
 
+# def get_input(prompt: str) -> str:
+#     return input(prompt).strip()
+
 def get_input(prompt: str) -> str:
-    return input(prompt).strip()
+    try:
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
+
+        input_buffer = []
+
+        while True:
+            char = sys.stdin.read(1)
+            if char == "\n":
+                break
+            elif char == "\x7f":  # Handle backspace
+                if input_buffer:
+                    input_buffer.pop()
+                    sys.stdout.write("\b \b")  # Backspace + clear character
+                    sys.stdout.flush()
+            else:
+                input_buffer.append(char)
+                sys.stdout.write(char)
+                sys.stdout.flush()
+
+        return ''.join(input_buffer).strip()
+    except KeyboardInterrupt:
+        sys.stdout.flush()
+        raise
 
 def get_default_config():
     return {
