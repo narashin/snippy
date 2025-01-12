@@ -13,9 +13,6 @@ emoji = "^2.14.0"
 [tool.poetry.scripts]
 snippy = "main:cli"
 
-[tool.poetry.build]
-generate-setup-file = true
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
