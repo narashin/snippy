@@ -44,5 +44,5 @@ dev = ["coverage", "pytest (>=7.4.4)"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.11"
-content-hash = "40d83be33f331b88b63ad600e2189604d7bde6a6941423146f68e9bda56a430a"
+python-versions = "^3.12"
+content-hash = "e4f9990b36147e78e13038db3a74ee358ff405ba7c9796f136f3a78820e81f9f"
