@@ -23,9 +23,14 @@ jobs:
 
       - name: Build Snippy
         run: |
-          pyinstaller snippy/main.py --name snippy --collect-all snippy --collect-data emoji --onedir --clean
-          cd dist/snippy
-          tar -czvf ../../snippy-${{ github.ref_name }}.tar.gz *
+          pyinstaller snippy/main.py \
+            --name snippy \
+            --collect-all snippy \
+            --collect-all click \
+            --collect-data emoji \
+            --onedir \
+            --clean
+          tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
       - name: Calculate SHA256
         id: sha256
