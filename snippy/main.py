@@ -8,18 +8,24 @@ import click
 
 CONFIG_PATH = os.path.expanduser("~/.snippy_config.json")
 
+
 def get_subprocess_module():
     import subprocess
+
     return subprocess
 
+
 _emoji = None
+
 
 def get_emoji_module():
     global _emoji
     if _emoji is None:
         import emoji
+
         _emoji = emoji
     return _emoji
+
 
 def emojize_if_valid(emoji_code):
     try:
@@ -27,9 +33,11 @@ def emojize_if_valid(emoji_code):
     except KeyError:
         return emoji_code
 
+
 def emojize_commit_types(commit_types):
     emoji = get_emoji_module()
     return {key: emoji.emojize(value, language="alias") for key, value in commit_types.items()}
+
 
 raw_commit_types = {
     "feat": ":sparkles:",
@@ -39,11 +47,13 @@ raw_commit_types = {
     "refactor": ":recycle:",
     "perf": ":zap:",
     "test": ":white_check_mark:",
-    "chore": ":wrench:"
+    "chore": ":wrench:",
 }
+
 
 def run_async(func, *args, **kwargs):
     return asyncio.run(func(*args, **kwargs))
+
 
 def get_input(prompt: str) -> str:
     readline.set_startup_hook(lambda: readline.insert_text(""))
@@ -52,11 +62,13 @@ def get_input(prompt: str) -> str:
     finally:
         readline.set_startup_hook(None)
 
+
 def get_default_config():
     return {
         "commit_template": "<type>: <emoji> <subject>",
         "commit_types": emojize_commit_types(raw_commit_types),
     }
+
 
 async def load_config_async():
     try:
@@ -70,9 +82,11 @@ def save_config(config):
     with open(CONFIG_PATH, "w") as file:
         json.dump(config, file, indent=4)
 
+
 def reset_config():
     default_config = get_default_config()
     save_config(default_config)
+
 
 def configure(config):
     while True:
@@ -416,11 +430,13 @@ def cli(ctx, config, reset):
     if ctx.invoked_subcommand is None:
         run()
 
+
 @cli.command(name="config")
 def config_command():
     """Configure commit template and types."""
     config = run_async(load_config_async)
     configure(config)
+
 
 @cli.command(name="reset")
 def reset_command():
@@ -493,6 +509,7 @@ def run():
     except KeyboardInterrupt:
         click.echo("\nSay Good bye to Snippy. Bye Bye!", err=True)
         raise click.Abort()
+
 
 if __name__ == "__main__":
     try:
