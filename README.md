@@ -60,9 +60,4 @@ Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스
 
 If you want to contribute to Snippy, fork the GitHub repository and submit a pull request.
 
-GitHub 저장소 / GitHub repository: https://github.com/narashin/homebrew-snippy
-
-## 라이선스 / License
-Snippy는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 LICENSE 파일을 참조하세요.
-
-Snippy is distributed under the MIT license. See the LICENSE file for more details. 
+GitHub 저장소 / GitHub repository: https://github.com/narashin/snippy
