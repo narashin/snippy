@@ -24,15 +24,8 @@ jobs:
 
       - name: Build Snippy
         run: |
-          pyinstaller snippy/main.py \
-            --name snippy \
-            --hidden-import click \
-            --hidden-import click.decorators \
-            --hidden-import click.termui \
-            --hidden-import click.types \
-            --collect-all emoji \
+          pyinstaller snippy.spec \
             --paths $(python -c "import site; print(site.getsitepackages()[0])") \
-            --onedir \
             --clean
           tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
