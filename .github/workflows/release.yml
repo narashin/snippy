@@ -24,9 +24,7 @@ jobs:
 
       - name: Build Snippy
         run: |
-          pyinstaller snippy.spec \
-            --paths $(python -c "import site; print(site.getsitepackages()[0])") \
-            --clean
+          pyinstaller snippy.spec --clean
           tar -czvf snippy-${{ github.ref_name }}.tar.gz -C dist/snippy .
 
       - name: Calculate SHA256
