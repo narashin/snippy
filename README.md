@@ -51,9 +51,36 @@ Snippy의 설정을 변경하려면 다음 명령어를 사용합니다.
 
 To change Snippy's configuration, use the following command:
 
+```
+snippy --config
+```
+
 설정 메뉴에서 커밋 템플릿과 커밋 타입을 구성할 수 있습니다.
 
 In the configuration menu, you can configure commit templates and commit types.
+
+```
+Current Configuration:
+----------------------------------------
+Template:
+  <type>: <emoji> <subject> (e.g: feat: ✨ This is example comment.)
+
+Commit types:
+  <emoji> option is on
+  <type> option is on
+
+  feat: ✨
+  fix: 🐛
+  docs: 📝
+  style: 💄
+  refactor: ♻️
+  perf: ⚡
+  test: ✅
+  chore: 🔧
+----------------------------------------
+Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? : 
+```
+
 
 ## 기여 / Contributing
 Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스트를 제출해 주세요. 
