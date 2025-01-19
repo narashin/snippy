@@ -1,7 +1,7 @@
 ---
 name: "Bug Report | 버그 리포트"
 about: "Report a bug to help us improve | 개선을 위한 버그를 제보하세요"
-title: "[Bug]: <간단한 버그 요약 | Brief Bug Summary>"
+title: "[Bug🐛]: <간단한 버그 요약 | Brief Bug Summary>"
 labels: bug
 assignees: ''
 ---
@@ -15,10 +15,9 @@ Briefly describe the issue. For example: "When entering a space in the commit me
 ### 재현 방법 | Steps to Reproduce
 버그를 재현하려면 다음 단계를 따르세요:
 To reproduce the bug, follow these steps:
-1. `snippy > fix` 선택 | Select `snippy > fix`
-2. `asdf asdf` 입력 | Enter `asdf asdf`
-3. `option + 왼쪽 화살표` 키를 2회 누름 | Press `option + left arrow key` twice
-4. 커서가 왼쪽이 아닌 오른쪽 끝으로 튑니다. 이후 오프셋이 복구되지 않음 | The cursor jumps to the right end instead of the left, and the offset does not recover.
+1. `snippy` 진입 | Enter `snippy`
+2. 
+3. 
 
 ### 예상 동작 | Expected Behavior
 <!--
@@ -33,9 +32,12 @@ Add screenshots if necessary.
 -->
 
 ### 환경 정보 | Environment
-- **운영체제 | OS**: macOS 15.1 (24B2083)
+- **운영체제 | OS**: macOS 15.0 (24B2083)
 - **터미널 | Terminal**: iTerm2 (Build 3.5.11)
-- **앱 버전 | App Version**: v1.0.8
+- **앱 버전 | App Version**: v1.0.0 
+<!--
+앱 버전은 `snippy --version` 으로 확인할 수 있습니다. You can check the app version by running `snippy --version`.
+-->
 
 ### 추가 정보 | Additional Information
 <!--
