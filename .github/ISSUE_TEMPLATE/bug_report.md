@@ -32,8 +32,8 @@ Add screenshots if necessary.
 -->
 
 ### 환경 정보 | Environment
-- **운영체제 | OS**: macOS 15.0 (24B2083)
-- **터미널 | Terminal**: iTerm2 (Build 3.5.11)
+- **운영체제 | OS**: SnippyOS XX.X (24BXXXXX)
+- **터미널 | Terminal**: SnipTerm (Build 0.0.0)
 - **앱 버전 | App Version**: v1.0.0 
 <!--
 앱 버전은 `snippy --version` 으로 확인할 수 있습니다. You can check the app version by running `snippy --version`.
