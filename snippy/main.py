@@ -80,7 +80,7 @@ def run():
 
         if include_type or include_emoji:
             option = get_input(
-                "\033[1;34mChoose an option or enter number to select a type:\033[0m "
+                "Choose an option or enter number to select a type:"
             ).lower()
             if option.isdigit():
                 option = int(option)
@@ -94,7 +94,7 @@ def run():
                 click.echo("Invalid option. Exiting.")
                 sys.exit(1)
 
-        subject = get_input("\033[1;32mEnter commit message:\033[0m ")
+        subject = get_input("Enter commit message:")
 
         commit_message = commit_template.replace("<type>", commit_type).replace(
             "<subject>", subject
