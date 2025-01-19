@@ -1,3 +1,4 @@
+import os
 import sys
 
 import click
@@ -5,12 +6,19 @@ import click
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
 from snippy.utils.emoji_utils import emojize_if_valid
-from snippy.utils.git_utils import get_git_version
 from snippy.utils.io_utils import get_input, run_async
 
 
+def capture_input():
+    while True:
+        char = sys.stdin.read(1)
+        print(f"Key pressed: {repr(char)}")
+
+
 @click.group(invoke_without_command=True)
-@click.version_option(version=get_git_version(), prog_name="Snippy")
+# @click.version_option(version=get_version("snippy"), prog_name="Snippy")
+# @click.version_option(version=get_git_version(), prog_name="Snippy")
+@click.version_option(version="2.1.1", prog_name="Snippy")
 @click.option("--config", is_flag=True, help="Configure commit template and types.")
 @click.option("--reset", is_flag=True, help="Reset configuration to default values.")
 @click.pass_context
@@ -113,13 +121,21 @@ def run():
         raise click.Abort()
 
 
+def debug_environment():
+    print("stdin isatty:", sys.stdin.isatty())
+    print("stdout isatty:", sys.stdout.isatty())
+    print("TERM:", os.environ.get("TERM", "Not Set"))
+
+
 if __name__ == "__main__":
     try:
+        print("Welcome to Snippy!")
+        click.echo("끄아아아아아아아악!!!")
+        debug_environment()
         cli()
     except click.Abort:
         click.echo("\nExecution aborted by user. Exiting... Bye!")
         sys.exit(1)
     except Exception as e:
         click.echo(click.style(f"An unexpected error occurred: {e}", fg="red"))
-        sys.exit(1)
         sys.exit(1)
