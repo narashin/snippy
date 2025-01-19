@@ -19,11 +19,6 @@ jobs:
           python-version: '3.12.8'
           architecture: 'x64'
 
-      - name: Install Homebrew Dependencies
-        run: |
-          brew update
-          brew install readline
-
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
 
