@@ -44,6 +44,3 @@ def commit_with_warning(commit_message):
 
     subprocess.run(["git", "commit", "-m", commit_message])
     click.echo(click.style("Commit successful!", fg="green", bold=True))
-
-    subprocess.run(["git", "commit", "-m", commit_message])
-    click.echo(click.style("Commit successful!", fg="green", bold=True))
