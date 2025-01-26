@@ -49,10 +49,10 @@ Enter commit message:
 ## 설정 / Configuration
 Snippy의 설정을 변경하려면 다음 명령어를 사용합니다.
 
-To change Snippy's configuration, use the following command:
+To change Snippy's configuration, use the following subcommand:
 
 ```
-snippy --config
+snippy config
 ```
 
 설정 메뉴에서 커밋 템플릿과 커밋 타입을 구성할 수 있습니다.
@@ -80,6 +80,15 @@ Commit types:
 ----------------------------------------
 Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? : 
 ```
+
+## 초기화 / Reset
+```
+snippy reset
+```
+
+snippy의 설정을 처음으로 되돌릴 수 있습니다.
+
+You can reset Snippy's configuration values to their default settings.
 
 
 ## 기여 / Contributing
