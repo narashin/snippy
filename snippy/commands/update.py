@@ -15,6 +15,23 @@ from snippy.constants import (
 from snippy.utils.animation_utils import show_loading_animation
 
 
+def update_brew_in_background():
+    def update():
+        result = subprocess.run(
+            ["brew", "update"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode == 0:
+            print("Homebrew updated successfully!")
+        else:
+            print(f"Error updating Homebrew: {result.stderr}")
+
+    thread = threading.Thread(target=update, daemon=True)
+    thread.start()
+
+
 def save_latest_version(latest_version):
     os.makedirs(BASE_DIR, exist_ok=True)
     with open(LATEST_VERSION_PATH, "w") as f:
@@ -36,6 +53,7 @@ def is_cache_expired(file_path):
 
 def fetch_latest_version():
     try:
+        update_brew_in_background()
         result = subprocess.run(
             ["brew", "info", "--json=v2", "snippy"],
             stdout=subprocess.PIPE,
@@ -114,7 +132,7 @@ def check_version():
     installed_version = load_installed_version()
     latest_version = load_latest_version()
 
-    if installed_version or latest_version is None:
+    if installed_version is None or latest_version is None:
         return
 
     if not installed_version:
