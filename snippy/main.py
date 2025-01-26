@@ -4,6 +4,7 @@ import click
 
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
+from snippy.commands.update import version_check_in_background
 from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.git_utils import get_git_version
 from snippy.utils.io_utils import get_input, run_async
@@ -80,7 +81,7 @@ def run():
 
         if include_type or include_emoji:
             option = get_input(
-                "Choose an option or enter number to select a type:"
+                "Choose an option or enter number to select a type: "
             ).lower()
             if option.isdigit():
                 option = int(option)
@@ -94,7 +95,7 @@ def run():
                 click.echo("Invalid option. Exiting.")
                 sys.exit(1)
 
-        subject = get_input("Enter commit message:")
+        subject = get_input("Enter commit message: ")
 
         commit_message = commit_template.replace("<type>", commit_type).replace(
             "<subject>", subject
@@ -114,6 +115,7 @@ def run():
 
 
 if __name__ == "__main__":
+    version_check_in_background()
     try:
         cli()
     except click.Abort:
