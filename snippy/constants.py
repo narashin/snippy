@@ -9,7 +9,7 @@ BASE_DIR = os.path.expanduser("~/.snippy")
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 VERSION_CACHE_PATH = os.path.join(BASE_DIR, "installed_version.json")
 LATEST_VERSION_PATH = os.path.join(BASE_DIR, "latest_version.json")
-
+CACHE_EXPIRATION_TIME = 60 * 60 * 6  # 6 hours
 
 # ANSI Colors
 ANSI_GREEN_BOLD = "\033[1;32m"

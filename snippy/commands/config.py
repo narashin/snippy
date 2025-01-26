@@ -2,16 +2,7 @@ import json
 
 import click
 
-from snippy.constants import (
-    ANSI_GREEN_BOLD,
-    ANSI_RED_BOLD,
-    ANSI_RESET,
-    CONFIG_PATH,
-    OFF_RED,
-    ON_GREEN,
-    RAW_COMMIT_TYPES,
-    SEPARATOR,
-)
+from snippy.constants import CONFIG_PATH, OFF_RED, ON_GREEN, RAW_COMMIT_TYPES, SEPARATOR
 from snippy.utils.emoji_utils import emojize_commit_types, emojize_if_valid
 from snippy.utils.io_utils import get_input, run_async
 
@@ -28,7 +19,9 @@ async def load_config_async():
         with open(CONFIG_PATH, "r") as file:
             return json.load(file)
     except FileNotFoundError:
-        return get_default_config()
+        default_config = get_default_config()
+        save_config(default_config)
+        return default_config
 
 
 def save_config(config):
@@ -50,20 +43,27 @@ def configure(config):
         if option == "q":
             break
         elif option == "t":
+            show_current_template(config)
             configure_template(config)
         elif option == "c":
             configure_commit_types(config)
         elif option == "r":
             reset_config()
             config = run_async(load_config_async)
+            click.echo("🔄 Configuration reset to default values. ")
         else:
-            print("Invalid option. Please choose 't', 'c', 'r', or 'q'.")
+            click.echo(
+                click.style(
+                    "Invalid option. Please choose 't', 'c', 'r', or 'q'.", fg="red"
+                )
+            )
     save_config(config)
 
 
 def show_current_configuration(config):
-    print("Current Configuration:")
-    print(SEPARATOR)
+    click.echo(click.style("Current Configuration:", bold=True))
+    click.echo(click.style(SEPARATOR, dim=True))
+    click.echo()
 
     if config["commit_types"]:
         first_commit_type = next(iter(config["commit_types"].items()))
@@ -86,23 +86,23 @@ def show_current_configuration(config):
         example_commit = example_commit.replace("<subject>", "This is example comment.")
 
     emoji_status = (
-        f"{ANSI_GREEN_BOLD}on{ANSI_RESET}"
+        click.style("on", fg="green", bold=True)
         if include_emoji
-        else f"{ANSI_RED_BOLD}off{ANSI_RESET}"
+        else click.style("off", fg="red", bold=True)
     )
     type_status = (
-        f"{ANSI_GREEN_BOLD}on{ANSI_RESET}"
+        click.style("on", fg="green", bold=True)
         if include_type
-        else f"{ANSI_RED_BOLD}off{ANSI_RESET}"
+        else click.style("off", fg="red", bold=True)
     )
 
-    print("Template:")
-    print(f"  {config['commit_template']} (e.g: {example_commit})")
-    print()
-    print("Commit types:")
-    print(f"  <emoji> option is {emoji_status}")
-    print(f"  <type> option is {type_status}")
-    print()
+    click.echo("Template:")
+    click.echo(f"  {config['commit_template']} (e.g: {example_commit})")
+    click.echo()
+    click.echo("Commit types:")
+    click.echo(f"  <emoji> option is {emoji_status}")
+    click.echo(f"  <type> option is {type_status}")
+    click.echo()
 
     if include_type and include_emoji:
         for commit_type, emoji_code in config["commit_types"].items():
@@ -114,7 +114,7 @@ def show_current_configuration(config):
         for emoji_code in config["commit_types"].values():
             print(f"  {emojize_if_valid(emoji_code)}")
 
-    print(SEPARATOR)
+    click.echo(click.style(SEPARATOR, dim=True))
 
 
 def show_current_template(config):
@@ -137,7 +137,7 @@ def show_current_template(config):
             example_commit = example_commit.replace("<emoji>", "")
         example_commit = example_commit.replace("<subject>", "This is example comment.")
 
-        click.echo(click.style("-" * 40, dim=True))
+        click.echo(click.style(SEPARATOR, dim=True))
         click.echo(click.style("Template:", bold=True))
         click.echo(f"  {current_template} (e.g: {example_commit})")
         click.echo(" ")
@@ -151,7 +151,7 @@ def show_current_template(config):
         click.echo(
             "   <subject> (*required): " + click.style("on", fg="green", bold=True)
         )
-        click.echo(click.style("-" * 40, dim=True))
+        click.echo(click.style(SEPARATOR, dim=True))
 
 
 def configure_template(config):
@@ -180,9 +180,11 @@ def configure_template(config):
         )
         click.echo("Options:")
         click.echo(
-            f"  1. <emoji> {'on' if config.get('include_emoji', True) else 'off'}"
+            f"  1. <emoji>: {click.style('on', fg='green', bold=True) if config.get('include_emoji', True) else click.style('off', fg='red', bold=True)}"
         )
-        click.echo(f"  2. <type> {'on' if config.get('include_type', True) else 'off'}")
+        click.echo(
+            f"  2. <type>: {click.style('on', fg='green', bold=True) if config.get('include_type', True) else click.style('off', fg='red', bold=True)}"
+        )
         click.echo("")
 
         choice = click.prompt(
@@ -235,22 +237,37 @@ def configure_template(config):
                     fg="yellow",
                 )
             )
-            new_template = click.prompt(
-                click.style(
-                    "Enter new commit template (use "
-                    f"{'<type>, ' if config.get('include_type', True) else ''}"
-                    f"{'<emoji>, ' if config.get('include_emoji', True) else ''}"
-                    "<subject>, or 'b' to go back",
-                    fg="blue",
-                ),
-                type=str,
-                default="b",
-            )
-            if new_template == "b":
-                continue
-            if "<subject>" not in new_template:
-                click.echo(click.style("Template must include <subject>", fg="red"))
-            else:
+            show_current_template(config)
+
+            while True:
+                new_template = click.prompt(
+                    click.style(
+                        "Enter new commit template (use "
+                        f"{'<type>, ' if config.get('include_type', True) else ''}"
+                        f"{'<emoji>, ' if config.get('include_emoji', True) else ''}"
+                        "<subject>, or 'b' to go back",
+                        fg="blue",
+                    ),
+                    type=str,
+                    default="b",
+                )
+
+                if new_template.lower() == "b":
+                    break
+
+                errors = []
+                if "<subject>" not in new_template:
+                    errors.append("Template must include <subject>.")
+                if config.get("include_emoji", True) and "<emoji>" not in new_template:
+                    errors.append("<emoji> must be included when emoji is enabled.")
+                if config.get("include_type", True) and "<type>" not in new_template:
+                    errors.append("<type> must be included when type is enabled.")
+
+                if errors:
+                    click.echo(click.style(" ".join(errors), fg="red", bold=True))
+                    continue
+
+                # 템플릿 유효하면 저장
                 config["commit_template"] = new_template
                 save_config(config)
                 click.echo(
@@ -272,7 +289,7 @@ def configure_commit_types(config):
         include_type = config.get("include_type", True)
 
         click.echo(click.style("Commit Types Configuration:", bold=True))
-        click.echo(SEPARATOR)
+        click.echo(click.style(SEPARATOR, dim=True))
 
         if include_type and include_emoji:
             click.echo(f"Options: <type> is {ON_GREEN}. <emoji> is {ON_GREEN}.")
@@ -290,11 +307,11 @@ def configure_commit_types(config):
 
         click.echo("a. + Add a new type")
         click.echo("d. - Delete a type")
-        click.echo(SEPARATOR)
+        click.echo(click.style(SEPARATOR, dim=True))
 
         option = click.prompt(
             click.style(
-                "Choose an option or enter number to select a type (or 'b' to go back):",
+                "Choose an option or enter number to select a type (or 'b' to go back)",
                 fg="blue",
             ),
             type=str,
@@ -309,7 +326,7 @@ def configure_commit_types(config):
             )
             new_emoji = click.prompt(
                 click.style(
-                    "Enter emoji for new type (use :emoji: format, leave empty to skip):",
+                    "Enter emoji for new type (use :emoji: format, leave empty to skip)",
                     fg="blue",
                 ),
                 default="",
@@ -330,7 +347,7 @@ def configure_commit_types(config):
         elif option == "d":
             delete_option = click.prompt(
                 click.style(
-                    "Enter the number of the commit type to delete (or 'b' to go back):",
+                    "Enter the number of the commit type to delete (or 'b' to go back)",
                     fg="blue",
                 ),
                 default="b",

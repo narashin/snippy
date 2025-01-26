@@ -4,7 +4,11 @@ import click
 
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
-from snippy.commands.update import check_version_and_prompt, version_check_in_background
+from snippy.commands.update import (
+    check_version,
+    update_snippy,
+    version_check_in_background,
+)
 from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.git_utils import get_git_version
 from snippy.utils.io_utils import get_input, run_async
@@ -12,18 +16,9 @@ from snippy.utils.io_utils import get_input, run_async
 
 @click.group(invoke_without_command=True)
 @click.version_option(version=get_git_version(), prog_name="Snippy")
-@click.option("--config", is_flag=True, help="Configure commit template and types.")
-@click.option("--reset", is_flag=True, help="Reset configuration to default values.")
 @click.pass_context
-def cli(ctx, config, reset):
+def cli(ctx):
     """Snippy! Templatize your git commit comments. <3"""
-    if config:
-        ctx.invoke(config_command)
-        ctx.exit()
-
-    if reset:
-        ctx.invoke(reset_command)
-        ctx.exit()
 
     if ctx.invoked_subcommand is None:
         run()
@@ -31,16 +26,19 @@ def cli(ctx, config, reset):
 
 @cli.command(name="config")
 def config_command():
-    """Configure commit template and types."""
     config = run_async(load_config_async)
     configure(config)
 
 
 @cli.command(name="reset")
 def reset_command():
-    """Reset configuration to default values."""
     reset_config()
     click.echo("Configuration reset to default values.")
+
+
+@cli.command(name="update")
+def update_command():
+    update_snippy()
 
 
 @cli.command()
@@ -116,7 +114,7 @@ def run():
 if __name__ == "__main__":
     version_check_in_background()
     try:
-        check_version_and_prompt()
+        check_version()
         cli()
     except click.Abort:
         click.echo("\nExecution aborted by user. Exiting... Bye!")
