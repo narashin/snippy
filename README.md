@@ -86,7 +86,7 @@ Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)u
 snippy reset
 ```
 
-snippy의 설정을 처음으로 되돌릴 수 있습니다.
+snippy의 설정을 처음으로 되돌릴 수 있습니다. 
 
 You can reset Snippy's configuration values to their default settings.
 
