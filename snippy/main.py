@@ -7,6 +7,7 @@ from snippy.commands.config import configure, load_config_async, reset_config
 from snippy.commands.update import (
     check_version,
     fetch_installed_version_with_animation,
+    load_installed_version,
     update_snippy,
     version_check_in_background,
 )
@@ -14,9 +15,18 @@ from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.io_utils import get_input, run_async
 
 
+def lazy_version_fetch():
+    return (
+        load_installed_version()
+        or fetch_installed_version_with_animation()
+        or "Unknown"
+    )
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(
-    version=fetch_installed_version_with_animation(), prog_name="Snippy"
+    version=lazy_version_fetch(),
+    prog_name="Snippy",
 )
 @click.pass_context
 def cli(ctx):
