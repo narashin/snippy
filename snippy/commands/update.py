@@ -30,6 +30,7 @@ def update_brew_in_background():
 
     thread = threading.Thread(target=update, daemon=True)
     thread.start()
+    thread.join()
 
 
 def save_latest_version(latest_version):
