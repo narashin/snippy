@@ -35,7 +35,7 @@ def load_installed_version():
 
 
 def get_latest_version():
-    result = subprocess.run(
+    result = subprocess.Popen(
         ["brew", "info", "--json=v2", "snippy"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -49,7 +49,7 @@ def get_latest_version():
 
 
 def get_installed_version():
-    result = subprocess.run(
+    result = subprocess.Popen(
         ["brew", "list", "--versions", "snippy"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -59,6 +59,9 @@ def get_installed_version():
         save_installed_version(installed_version)
         return installed_version
     return None
+
+
+version_check_done = threading.Event()
 
 
 def check_version():
@@ -78,4 +81,33 @@ def check_version():
 
 
 def version_check_in_background():
-    threading.Thread(target=check_version, daemon=True).start()
+    def check():
+        try:
+            get_installed_version()
+            get_latest_version()
+        except Exception as e:
+            click.echo(f"Error occurred while checking for updates: {e}")
+
+    thread = threading.Thread(target=check, daemon=True)
+    thread.start()
+
+
+def check_version_and_prompt():
+    installed_version = load_installed_version()
+    latest_version = load_latest_version()
+
+    if not installed_version or not latest_version:
+        return
+
+    if installed_version != latest_version:
+        click.echo(
+            f"C🆕urrent installed version: {installed_version}, Latest version: {latest_version} "
+        )
+        update = click.prompt(
+            "Would you like to update? (y/N)", type=str, default="n", show_default=True
+        )
+        if update.lower() == "y":
+            subprocess.run(["brew", "upgrade", "snippy"])
+            click.echo("Update completed. 🎉")
+        else:
+            click.echo("Update cancelled. Run `snippy update` to update later. 👋")

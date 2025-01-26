@@ -45,7 +45,7 @@ def configure(config):
     while True:
         show_current_configuration(config)
         option = get_input(
-            "\033[1;34mDo you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit?\033[0m "
+            "Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? "
         ).lower()
         if option == "q":
             break
@@ -410,5 +410,4 @@ def configure_commit_types(config):
                     click.style("Invalid input. Please enter a number.", fg="red")
                 )
 
-        save_config(config)
         save_config(config)

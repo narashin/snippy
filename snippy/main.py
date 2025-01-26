@@ -4,7 +4,7 @@ import click
 
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
-from snippy.commands.update import version_check_in_background
+from snippy.commands.update import check_version_and_prompt, version_check_in_background
 from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.git_utils import get_git_version
 from snippy.utils.io_utils import get_input, run_async
@@ -80,9 +80,8 @@ def run():
             select_commit_type(dict(commit_types.items()), False, include_emoji)
 
         if include_type or include_emoji:
-            option = get_input(
-                "Choose an option or enter number to select a type: "
-            ).lower()
+            option = get_input("Choose an option to select a type: ")
+
             if option.isdigit():
                 option = int(option)
                 if 1 <= option <= len(commit_types):
@@ -117,6 +116,7 @@ def run():
 if __name__ == "__main__":
     version_check_in_background()
     try:
+        check_version_and_prompt()
         cli()
     except click.Abort:
         click.echo("\nExecution aborted by user. Exiting... Bye!")
