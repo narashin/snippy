@@ -10,7 +10,7 @@ def get_subprocess_module():
 def check_staged_files():
     subprocess = get_subprocess_module()
     result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only"], stdout=subprocess.PIPE, text=True
+        ["git", "diff", "--staged", "--name-only"], stdout=subprocess.PIPE, text=True
     )
     if not result.stdout.strip():
         return False
