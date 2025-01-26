@@ -92,6 +92,16 @@ def fetch_installed_version():
     return None
 
 
+def fetch_installed_version_with_animation():
+    stop_animation = show_loading_animation(
+        message="🕵️  Checking for installed version..."
+    )
+    installed_version = fetch_installed_version()
+    stop_animation.set()
+    print("\n", end="")
+    return installed_version
+
+
 def load_installed_version():
     try:
         with open(VERSION_CACHE_PATH, "r") as f:

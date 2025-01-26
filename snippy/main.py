@@ -6,7 +6,7 @@ from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
 from snippy.commands.update import (
     check_version,
-    load_installed_version,
+    fetch_installed_version_with_animation,
     update_snippy,
     version_check_in_background,
 )
@@ -15,7 +15,9 @@ from snippy.utils.io_utils import get_input, run_async
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version=load_installed_version(), prog_name="Snippy")
+@click.version_option(
+    version=fetch_installed_version_with_animation(), prog_name="Snippy"
+)
 @click.pass_context
 def cli(ctx):
     """Snippy! Templatize your git commit comments. <3"""

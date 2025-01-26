@@ -27,16 +27,3 @@ def warn_if_no_staged_files(commit_message):
             + f' git commit -m "{commit_message}"'
         )
         raise click.Abort()
-
-
-def get_git_version():
-    subprocess = get_subprocess_module()
-    try:
-        version = subprocess.check_output(
-            ["git", "describe", "--tags", "--abbrev=0"],
-            stderr=subprocess.DEVNULL,
-            text=True,
-        ).strip()
-        return version
-    except subprocess.CalledProcessError:
-        return "0.0.0"
