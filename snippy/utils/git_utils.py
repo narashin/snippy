@@ -10,11 +10,11 @@ def get_subprocess_module():
 def check_staged_files():
     subprocess = get_subprocess_module()
     result = subprocess.run(
-        ["git", "diff", "--stage", "--quiet"],
+        ["git", "diff", "--cached", "--quiet"],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
     )
-    return result.returncode == 1
+    return result.returncode == 0
 
 
 def warn_if_no_staged_files(commit_message):

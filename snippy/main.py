@@ -5,11 +5,9 @@ import click
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
 from snippy.commands.update import (
-    check_version,
     fetch_installed_version_with_animation,
     load_installed_version,
     update_snippy,
-    version_check_in_background,
 )
 from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.io_utils import get_input, run_async
@@ -160,9 +158,7 @@ def run():
 
 
 if __name__ == "__main__":
-    version_check_in_background()
     try:
-        check_version()
         cli()
     except click.Abort:
         click.echo("\nExecution aborted by user. Exiting... Bye!")

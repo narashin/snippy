@@ -15,8 +15,8 @@ from snippy.constants import (
 from snippy.utils.animation_utils import show_loading_animation
 
 
-def update_brew_in_background():
-    def update():
+def update_brew():
+    try:
         result = subprocess.run(
             ["brew", "update"],
             stdout=subprocess.PIPE,
@@ -24,13 +24,38 @@ def update_brew_in_background():
             text=True,
         )
         if result.returncode == 0:
-            print("Homebrew updated successfully!")
+            click.echo("Homebrew updated successfully!")
         else:
-            print(f"Error updating Homebrew: {result.stderr}")
+            click.echo(f"Error updating Homebrew: {result.stderr}")
+    except Exception as e:
+        click.echo(f"Failed to update Homebrew: {e}")
 
-    thread = threading.Thread(target=update, daemon=True)
-    thread.start()
-    thread.join()
+
+def update_snippy():
+    stop_animation = show_loading_animation(message="🕵️  Checking for updates...")
+    try:
+        update_brew()
+
+        result = subprocess.run(
+            ["brew", "upgrade", "snippy"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        stop_animation.set()
+        if result.returncode == 0:
+            click.echo(
+                click.style(
+                    "\nSnippy has been updated to the latest version! 🎉", fg="green"
+                )
+            )
+        else:
+            click.echo(
+                click.style(f"\nFailed to update Snippy: {result.stderr}", fg="red")
+            )
+    except Exception as e:
+        stop_animation.set()
+        click.echo(click.style(f"\nAn error occurred during the update: {e}", fg="red"))
 
 
 def save_latest_version(latest_version):
@@ -54,7 +79,6 @@ def is_cache_expired(file_path):
 
 def fetch_latest_version():
     try:
-        update_brew_in_background()
         result = subprocess.run(
             ["brew", "info", "--json=v2", "snippy"],
             stdout=subprocess.PIPE,
@@ -79,6 +103,7 @@ def fetch_latest_version_in_background():
 
     thread = threading.Thread(target=fetch, daemon=True)
     thread.start()
+    thread.join()
 
 
 def load_latest_version():
@@ -154,31 +179,6 @@ def check_version():
             )
     else:
         click.echo(f"Snippy is up-to-date! Installed version: {installed_version} 🎉")
-
-
-def update_snippy():
-    stop_animation = show_loading_animation(message="🕵️  Checking for updates...")
-    try:
-        result = subprocess.run(
-            ["brew", "upgrade", "snippy"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        stop_animation.set()
-        if result.returncode == 0:
-            click.echo(
-                click.style(
-                    "\nSnippy has been updated to the latest version! 🎉", fg="green"
-                )
-            )
-        else:
-            click.echo(
-                click.style(f"\nFailed to update Snippy: {result.stderr}", fg="red")
-            )
-    except Exception as e:
-        stop_animation.set()
-        click.echo(click.style(f"\nAn error occurred during the update: {e}", fg="red"))
 
 
 def version_check_in_background():
