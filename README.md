@@ -122,3 +122,14 @@ Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스
 If you want to contribute to Snippy, fork the GitHub repository and submit a pull request.
 
 GitHub 저장소 / GitHub repository: https://github.com/narashin/snippy
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
