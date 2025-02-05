@@ -131,8 +131,8 @@ GitHub 저장소 / GitHub repository: https://github.com/narashin/snippy
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://tigeryoo-portfolio.web.app/"><img src="https://avatars.githubusercontent.com/u/6271133?v=4?s=100" width="100px;" alt="TigerYoo"/><br /><sub><b>TigerYoo</b></sub></a><br /><a href="#bug-MTGVim" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://nara.dev"><img src="https://avatars.githubusercontent.com/u/16604401?v=4?s=100" width="100px;" alt="nara"/><br /><sub><b>nara</b></sub></a><br /><a href="#code-narashin" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://tigeryoo-portfolio.web.app/"><img src="https://avatars.githubusercontent.com/u/6271133?v=4?s=100" width="100px;" alt="TigerYoo"/><br /><sub><b>TigerYoo</b></sub></a><br /><a href="#bug-MTGVim" title="Bug reports">🐛</a><a href="#code-MTGVim" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
