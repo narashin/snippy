@@ -1,4 +1,21 @@
 {
-    "projectName": "snippy",
-    "projectOwner": "narashin"
+  "projectName": "snippy",
+  "projectOwner": "narashin",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "MTGVim",
+      "name": "TigerYoo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6271133?v=4",
+      "profile": "https://tigeryoo-portfolio.web.app/",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ]
 }
