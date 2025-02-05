@@ -11,19 +11,42 @@ Snippy is a CLI tool that helps you easily write Git commit messages. This tool 
 - 커밋 템플릿 구성 / Configure commit templates
 - 사용자 정의 커밋 타입 추가 및 삭제 / Add and delete custom commit types
 
+## 설치 방법 / How To Install
+
+repository의 root에 있는 `install.sh`을 실행하거나 스크립트의 내용을 참고하여 실행하세요.
+
+You can either download the install.sh script from the repository root or refer to its contents to run the commands manually.
+
+만약 `install.sh`를 다운로드 받았다면 해당 파일에 실행 권한을 부여해주세요.
+
+If you have downloaded install.sh, make sure to give it execute permission:
+
+```
+chmod +x install.sh
+```
+
+실행권한이 부여되었다면, 스크립트를 실행하세요.
+
+Then, run the script:
+
+```
+./install.sh
+```
+
 ## 사용 방법 / Usage
 
 Snippy를 사용하여 커밋 메시지를 작성하는 방법은 다음과 같습니다.
 
 To write a commit message using Snippy, follow these steps:
 
-1. Snippy를 실행합니다. / Run Snippy. 
+1. Snippy를 실행합니다. / Run Snippy.
 
 ```
 snippy
 ```
 
 2. 커밋 타입을 선택합니다. / Select a commit type.
+
 ```
 Select commit type:
 ----------------------------------------
@@ -47,6 +70,7 @@ Enter commit message:
 4. Snippy가 커밋 메시지를 생성하고, Git 커밋을 수행합니다. / Snippy generates the commit message and performs the Git commit.
 
 ## 설정 / Configuration
+
 Snippy의 설정을 변경하려면 다음 명령어를 사용합니다.
 
 To change Snippy's configuration, use the following subcommand:
@@ -78,10 +102,11 @@ Commit types:
   test: ✅
   chore: 🔧
 ----------------------------------------
-Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? : 
+Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? :
 ```
 
 ## 초기화 / Reset
+
 ```
 snippy reset
 ```
@@ -90,10 +115,10 @@ snippy의 설정을 처음으로 되돌릴 수 있습니다.
 
 You can reset Snippy's configuration values to their default settings.
 
-
 ## 기여 / Contributing
-Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스트를 제출해 주세요. 
 
-If you want to contribute to Snippy, fork the GitHub repository and submit a pull request. 
+Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스트를 제출해 주세요.
+
+If you want to contribute to Snippy, fork the GitHub repository and submit a pull request.
 
 GitHub 저장소 / GitHub repository: https://github.com/narashin/snippy
