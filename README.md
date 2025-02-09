@@ -117,7 +117,7 @@ You can reset Snippy's configuration values to their default settings.
 
 ## 기여 / Contributing
 
-Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스트를 제출해 주세요.
+Snippy에 기여하고 싶다면, GitHub 저장소를 포크하고 풀 리퀘스트를 제출해주세요.
 
 If you want to contribute to Snippy, fork the GitHub repository and submit a pull request.
 
