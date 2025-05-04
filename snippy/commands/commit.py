@@ -17,20 +17,6 @@ def format_commit_type(base_type, emoji_code, include_type, include_emoji):
     return base_type
 
 
-def create_search_filter(search_text: str, choice: dict) -> bool:
-    """커스텀 검색 필터 함수"""
-    if not search_text:
-        return True
-
-    # 타입 이름에서 이모지 부분을 제외하고 검색
-    name = choice["name"].split(" (")[0] if " (" in choice["name"] else choice["name"]
-    search_text = search_text.lower()
-    name = name.lower()
-
-    # startswith로 검색
-    return name.startswith(search_text)
-
-
 def select_commit_type(
     commit_types,
     include_type=True,
@@ -59,7 +45,7 @@ def select_commit_type(
         instruction="(Type to search)",
         vi_mode=False,
         match_exact=False,
-        long_instruction="↑↓ to move, Enter to select, ESC to cancel",
+        long_instruction="↑↓ to move, Enter to select",
         validate=EmptyInputValidator(),
         mandatory=True,
     ).execute()
