@@ -10,6 +10,8 @@ python = "^3.12"
 click = "^8.1.8"
 emoji = "^2.14.0"
 prompt-toolkit = "^3.0.48"
+questionary = "^2.1.0"
+inquirerpy = "^0.3.4"
 
 [tool.poetry.scripts]
 snippy = "snippy.main:cli"
