@@ -1,6 +1,7 @@
 import sys
 
 import click
+import questionary
 
 from snippy.commands.commit import commit_with_warning, select_commit_type
 from snippy.commands.config import configure, load_config_async, reset_config
@@ -10,7 +11,7 @@ from snippy.commands.update import (
     update_snippy,
 )
 from snippy.utils.emoji_utils import emojize_if_valid
-from snippy.utils.io_utils import get_input, run_async
+from snippy.utils.io_utils import run_async
 
 
 def lazy_version_fetch():
@@ -88,57 +89,56 @@ def run():
             filtered_commit_types = {}
 
         if include_type or include_emoji:
-            select_commit_type(filtered_commit_types, include_type, include_emoji)
-            option = get_input("Choose an option to select a type: ")
-
-            if option.isdigit():
-                option = int(option)
-                if 1 <= option <= len(commit_types):
-                    commit_type = list(commit_types.keys())[option - 1]
-                    emoji_code = commit_types[commit_type]
-                else:
-                    click.echo("Invalid option. Exiting.")
-                    sys.exit(1)
-            else:
-                click.echo("Invalid option. Exiting.")
+            result = select_commit_type(
+                filtered_commit_types, include_type, include_emoji
+            )
+            if result in ["add", "delete"]:
+                click.echo(
+                    "Configuration options are not available in commit mode. Please use 'snippy config'."
+                )
                 sys.exit(1)
-
-        while True:
-            subject = get_input("Enter commit message: ").strip()
-
-            if not subject:
-                generated_message = commit_template
-                if include_type:
-                    generated_message = generated_message.replace("<type>", commit_type)
-                else:
-                    generated_message = generated_message.replace("<type>", "")
-
-                if include_emoji:
-                    generated_message = generated_message.replace(
-                        "<emoji>", emojize_if_valid(emoji_code)
-                    )
-                else:
-                    generated_message = generated_message.replace("<emoji>", "")
-
-                generated_message = generated_message.replace("<subject>", "").strip()
-
-                if generated_message:
-                    click.echo(
-                        click.style(
-                            f"No commit message provided. Using default: {generated_message}",
-                            fg="yellow",
-                        )
-                    )
-                    break
-                else:
-                    click.echo(
-                        click.style(
-                            "Commit message cannot be empty. Please provide a message.",
-                            fg="red",
-                        )
-                    )
+            elif result is None:
+                click.echo("Commit cancelled.")
+                sys.exit(1)
             else:
-                break
+                commit_type, emoji_code = result
+
+        subject = questionary.text("Enter commit message:").ask()
+        if subject is None:
+            click.echo("Commit cancelled.")
+            sys.exit(1)
+
+        if not subject:
+            generated_message = commit_template
+            if include_type:
+                generated_message = generated_message.replace("<type>", commit_type)
+            else:
+                generated_message = generated_message.replace("<type>", "")
+
+            if include_emoji:
+                generated_message = generated_message.replace(
+                    "<emoji>", emojize_if_valid(emoji_code)
+                )
+            else:
+                generated_message = generated_message.replace("<emoji>", "")
+
+            generated_message = generated_message.replace("<subject>", "").strip()
+
+            if generated_message:
+                click.echo(
+                    click.style(
+                        f"No commit message provided. Using default: {generated_message}",
+                        fg="yellow",
+                    )
+                )
+            else:
+                click.echo(
+                    click.style(
+                        "Commit message cannot be empty. Please provide a message.",
+                        fg="red",
+                    )
+                )
+                sys.exit(1)
 
         commit_message = commit_template.replace("<type>", commit_type).replace(
             "<subject>", subject
