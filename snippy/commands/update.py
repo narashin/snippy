@@ -19,8 +19,7 @@ def update_brew():
     try:
         result = subprocess.run(
             ["brew", "update"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
         if result.returncode == 0:
@@ -36,35 +35,55 @@ def update_snippy():
     try:
         update_brew()
 
-        result = subprocess.run(
-            ["brew", "upgrade", "narashin/snippy/snippy"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            capture_output=True,
+        installed_version = fetch_installed_version()
+        latest_version = fetch_latest_version()
+
+        if installed_version is None or latest_version is None:
+            stop_animation.set()
+            click.echo("\nUnable to check versions. Please try again later. 😢")
+            return
+
+        if installed_version == latest_version:
+            stop_animation.set()
+            click.echo(
+                f"\nSnippy is already up-to-date! Version: {installed_version} 🎉"
+            )
+            return
+
+        click.echo(
+            f"\n🆕✨ Current version: {installed_version}, Latest version: {latest_version}"
         )
-        stop_animation.set()
+        update = click.prompt("Would you like to update? (y/N)", type=str, default="n")
+
+        if update.lower() != "y":
+            click.echo(
+                f"Update cancelled. Run {click.style('`snippy update`', fg='bright_yellow', bold=True)} to update later. 👋"
+            )
+            return
+
+        result = subprocess.run(
+            ["brew", "upgrade", "snippy"],
+            capture_output=True,
+            text=True,
+        )
+
         if result.returncode == 0:
             click.echo(
                 click.style(
-                    "\nSnippy has been updated to the latest version! 🎉", fg="green"
+                    f"\nSnippy has been updated from {installed_version} to {latest_version}! 🎉",
+                    fg="green",
                 )
             )
         else:
             click.echo(
-                click.style(
-                    f"\nFailed to update Snippy:\nError: {result.stderr}\nOutput: {result.stdout}",
-                    fg="red",
-                )
+                click.style(f"\nFailed to update Snippy: {result.stderr}", fg="red")
             )
     except Exception as e:
         stop_animation.set()
-        click.echo(
-            click.style(
-                f"\nAn error occurred during the update:\nError: {str(e)}\nType: {type(e).__name__}",
-                fg="red",
-            )
-        )
+        click.echo(click.style(f"\nAn error occurred during the update: {e}", fg="red"))
+    finally:
+        if not stop_animation.is_set():
+            stop_animation.set()
 
 
 def save_latest_version(latest_version):
@@ -89,9 +108,8 @@ def is_cache_expired(file_path):
 def fetch_latest_version():
     try:
         result = subprocess.run(
-            ["brew", "info", "--json=v2", "narashin/snippy/snippy"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            ["brew", "info", "--json=v2", "snippy"],
+            capture_output=True,
             text=True,
         )
         if result.returncode == 0:
@@ -129,9 +147,8 @@ def load_latest_version():
 def fetch_installed_version():
     try:
         result = subprocess.run(
-            ["brew", "list", "--versions", "narashin/snippy/snippy"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            ["brew", "list", "--versions", "snippy"],
+            capture_output=True,
             text=True,
         )
         if result.returncode == 0:
@@ -163,37 +180,25 @@ def load_installed_version():
         return fetch_installed_version()
 
 
-def check_version():
-    installed_version = load_installed_version()
-    latest_version = load_latest_version()
-
-    if installed_version is None or latest_version is None:
-        return
-
-    if not installed_version:
-        click.echo("Unable to fetch the installed version. 😢")
-        return
-
-    if installed_version != latest_version:
-        click.echo(
-            f"🆕✨ Current installed version: {installed_version}, Latest version: {latest_version} 🤨"
-        )
-        update = click.prompt("Would you like to update? (y/N)", type=str, default="n")
-        if update.lower() == "y":
-            subprocess.run(["brew", "upgrade", "snippy"])
-            click.echo("Update completed. 🎉")
-        else:
-            click.echo(
-                f"Update cancelled. Run {click.style('`snippy update`', fg='bright_yellow', bold=True)} to update later. 👋"
-            )
-    else:
-        click.echo(f"Snippy is up-to-date! Installed version: {installed_version} 🎉")
-
-
 def version_check_in_background():
     def check():
-        fetch_installed_version()
-        fetch_latest_version()
+        try:
+            installed_version = fetch_installed_version()
+            latest_version = fetch_latest_version()
+
+            if (
+                installed_version
+                and latest_version
+                and installed_version != latest_version
+            ):
+                click.echo(
+                    f"\n🆕✨ New version available! Current: {installed_version}, Latest: {latest_version}"
+                )
+                click.echo(
+                    f"Run {click.style('`snippy update`', fg='bright_yellow', bold=True)} to update. 👋"
+                )
+        except Exception:
+            pass  # Silently fail for background checks
 
     thread = threading.Thread(target=check, daemon=True)
     thread.start()
