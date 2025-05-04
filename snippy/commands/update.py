@@ -37,10 +37,11 @@ def update_snippy():
         update_brew()
 
         result = subprocess.run(
-            ["brew", "upgrade", "snippy"],
+            ["brew", "upgrade", "narashin/snippy/snippy"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            capture_output=True,
         )
         stop_animation.set()
         if result.returncode == 0:
@@ -51,11 +52,19 @@ def update_snippy():
             )
         else:
             click.echo(
-                click.style(f"\nFailed to update Snippy: {result.stderr}", fg="red")
+                click.style(
+                    f"\nFailed to update Snippy:\nError: {result.stderr}\nOutput: {result.stdout}",
+                    fg="red",
+                )
             )
     except Exception as e:
         stop_animation.set()
-        click.echo(click.style(f"\nAn error occurred during the update: {e}", fg="red"))
+        click.echo(
+            click.style(
+                f"\nAn error occurred during the update:\nError: {str(e)}\nType: {type(e).__name__}",
+                fg="red",
+            )
+        )
 
 
 def save_latest_version(latest_version):
@@ -80,7 +89,7 @@ def is_cache_expired(file_path):
 def fetch_latest_version():
     try:
         result = subprocess.run(
-            ["brew", "info", "--json=v2", "snippy"],
+            ["brew", "info", "--json=v2", "narashin/snippy/snippy"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -120,7 +129,7 @@ def load_latest_version():
 def fetch_installed_version():
     try:
         result = subprocess.run(
-            ["brew", "list", "--versions", "snippy"],
+            ["brew", "list", "--versions", "narashin/snippy/snippy"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
