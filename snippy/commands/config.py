@@ -1,10 +1,13 @@
 import json
 
 import click
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
+from InquirerPy.separator import Separator
 
 from snippy.constants import CONFIG_PATH, OFF_RED, ON_GREEN, RAW_COMMIT_TYPES, SEPARATOR
 from snippy.utils.emoji_utils import emojize_commit_types, emojize_if_valid
-from snippy.utils.io_utils import get_input, run_async
+from snippy.utils.io_utils import run_async
 
 
 def get_default_config():
@@ -36,35 +39,44 @@ def reset_config():
 
 def configure(config):
     while True:
-        show_current_configuration(config)
-        option = get_input(
-            "Do you want to configure (t)emplate, (c)ommit types, (r)eset to default, or (q)uit? "
-        ).lower()
+        click.echo(click.style("\nSnippy Configuration", bold=True))
+        click.echo(click.style(SEPARATOR, dim=True))
+
+        choices = [
+            Choice(value="t", name="📄 Edit Template (Toggle emoji and type)"),
+            Choice(value="c", name="✏️  Configure Commit Types"),
+            Choice(value="r", name="🧹  Reset to default"),
+            Separator(),
+            Choice(value="q", name="Quit"),
+        ]
+
+        option = inquirer.select(
+            message="Select an option:",
+            choices=choices,
+            default=None,
+            border=True,
+            instruction="(Use arrow keys and Enter to select)",
+        ).execute()
+
         if option == "q":
             break
         elif option == "t":
-            show_current_template(config)
             configure_template(config)
         elif option == "c":
             configure_commit_types(config)
         elif option == "r":
-            reset_config()
-            config = run_async(load_config_async)
-            click.echo("🔄 Configuration reset to default values. ")
-        else:
-            click.echo(
-                click.style(
-                    "Invalid option. Please choose 't', 'c', 'r', or 'q'.", fg="red"
-                )
-            )
+            if inquirer.confirm(
+                message="Are you sure you want to reset all settings to default?",
+                default=False,
+            ).execute():
+                reset_config()
+                config = run_async(load_config_async)
+                click.echo("🔄 Configuration reset to default values. ")
+
     save_config(config)
 
 
 def show_current_configuration(config):
-    click.echo(click.style("Current Configuration:", bold=True))
-    click.echo(click.style(SEPARATOR, dim=True))
-    click.echo()
-
     if config["commit_types"]:
         first_commit_type = next(iter(config["commit_types"].items()))
         example_commit = config["commit_template"]
@@ -96,7 +108,7 @@ def show_current_configuration(config):
         else click.style("off", fg="red", bold=True)
     )
 
-    click.echo("Template:")
+    click.echo("\nTemplate:")
     click.echo(f"  {config['commit_template']} (e.g: {example_commit})")
     click.echo()
     click.echo("Commit types:")
@@ -124,7 +136,7 @@ def show_current_template(config):
 
     if config["commit_types"]:
         first_commit_type = next(iter(config["commit_types"].items()))
-        example_commit = current_template.replace("<type>", first_commit_type[0])
+        example_commit = current_template
         if include_type:
             example_commit = example_commit.replace("<type>", first_commit_type[0])
         else:
@@ -137,20 +149,19 @@ def show_current_template(config):
             example_commit = example_commit.replace("<emoji>", "")
         example_commit = example_commit.replace("<subject>", "This is example comment.")
 
+        click.echo("\nTemplate Configuration")
         click.echo(click.style(SEPARATOR, dim=True))
-        click.echo(click.style("Template:", bold=True))
-        click.echo(f"  {current_template} (e.g: {example_commit})")
-        click.echo(" ")
-        click.echo(click.style("Options:", bold=True))
+        click.echo(f"Current Comment Template: {current_template}")
+        click.echo(f"Example: {example_commit}")
+        click.echo()
+        click.echo("Options:")
         click.echo(
-            f"1. <emoji> (optional): {click.style('on', fg='green', bold=True) if include_emoji else click.style('off', fg='red', bold=True)}"
+            f"• <emoji>: {click.style('on', fg='green', bold=True) if include_emoji else click.style('off', fg='red', bold=True)}"
         )
         click.echo(
-            f"2. <type> (optional): {click.style('on', fg='green', bold=True) if include_type else click.style('off', fg='red', bold=True)}"
+            f"• <type>: {click.style('on', fg='green', bold=True) if include_type else click.style('off', fg='red', bold=True)}"
         )
-        click.echo(
-            "   <subject> (*required): " + click.style("on", fg="green", bold=True)
-        )
+        click.echo("• <subject>: " + click.style("required", fg="yellow", bold=True))
         click.echo(click.style(SEPARATOR, dim=True))
 
 
@@ -174,38 +185,41 @@ def configure_template(config):
         return ""
 
     while True:
-        click.echo(click.style("Current Template Configuration:", bold=True))
-        click.echo(
-            f"Template: {config['commit_template']} (e.g: {update_example_commit()})"
-        )
-        click.echo("Options:")
-        click.echo(
-            f"  1. <emoji>: {click.style('on', fg='green', bold=True) if config.get('include_emoji', True) else click.style('off', fg='red', bold=True)}"
-        )
-        click.echo(
-            f"  2. <type>: {click.style('on', fg='green', bold=True) if config.get('include_type', True) else click.style('off', fg='red', bold=True)}"
-        )
-        click.echo("")
+        show_current_template(config)
 
-        choice = click.prompt(
-            click.style(
-                "Do you want to configure (o)ptions or comment (t)emplate, or 'b' to go back",
-                fg="blue",
-            ),
-            type=str,
-            default="b",
-        ).lower()
+        choices = [
+            Choice(value="o", name="↔️  Toggle Options (Emoji and Type)"),
+            Choice(value="t", name="✍️  Edit Comment Template"),
+            Separator(),
+            Choice(value="b", name="Go back"),
+        ]
+
+        choice = inquirer.select(
+            message="Select an option:",
+            choices=choices,
+            default=None,
+            border=True,
+            instruction="(Use arrow keys and Enter to select)",
+        ).execute()
 
         if choice == "b":
             return
         elif choice == "o":
-            option = click.prompt(
-                click.style(
-                    "Choose an option to toggle (1-2) or 'b' to go back", fg="blue"
-                ),
-                type=str,
-                default="b",
-            ).lower()
+            option_choices = [
+                Choice(value="1", name="Toggle <emoji>"),
+                Choice(value="2", name="Toggle <type>"),
+                Separator(),
+                Choice(value="b", name="Go back"),
+            ]
+
+            option = inquirer.select(
+                message="Choose an option to toggle:",
+                choices=option_choices,
+                default=None,
+                border=True,
+                instruction="(Use arrow keys and Enter to select)",
+            ).execute()
+
             if option == "b":
                 continue
             elif option == "1":
@@ -216,12 +230,6 @@ def configure_template(config):
                 include_type = not config.get("include_type", True)
                 config["include_type"] = include_type
                 click.echo(f"<type> set to {'on' if include_type else 'off'}")
-            else:
-                click.echo(
-                    click.style(
-                        "Invalid option. Please choose '1', '2', or 'b'.", fg="red"
-                    )
-                )
 
             commit_template = "<type>: <emoji> <subject>"
             if not config.get("include_type", True):
@@ -231,28 +239,16 @@ def configure_template(config):
             config["commit_template"] = commit_template
             save_config(config)
         elif choice == "t":
-            click.echo(
-                click.style(
-                    f"Current Template: {config['commit_template']} (e.g: {update_example_commit()})",
-                    fg="yellow",
-                )
-            )
-            show_current_template(config)
-
             while True:
-                new_template = click.prompt(
-                    click.style(
-                        "Enter new commit template (use "
-                        f"{'<type>, ' if config.get('include_type', True) else ''}"
-                        f"{'<emoji>, ' if config.get('include_emoji', True) else ''}"
-                        "<subject>, or 'b' to go back",
-                        fg="blue",
-                    ),
-                    type=str,
-                    default="b",
-                )
+                new_template = inquirer.text(
+                    message="Enter new commit template:",
+                    instruction=f"Use {'<type>, ' if config.get('include_type', True) else ''}"
+                    f"{'<emoji>, ' if config.get('include_emoji', True) else ''}"
+                    "<subject>, or press Enter to go back",
+                    default="",
+                ).execute()
 
-                if new_template.lower() == "b":
+                if not new_template:
                     break
 
                 errors = []
@@ -267,17 +263,12 @@ def configure_template(config):
                     click.echo(click.style(" ".join(errors), fg="red", bold=True))
                     continue
 
-                # 템플릿 유효하면 저장
                 config["commit_template"] = new_template
                 save_config(config)
                 click.echo(
                     click.style(f"Template updated to: {new_template}", fg="green")
                 )
                 break
-        else:
-            click.echo(
-                click.style("Invalid choice. Please choose 'o', 't', or 'b'.", fg="red")
-            )
 
 
 def configure_commit_types(config):
@@ -288,7 +279,7 @@ def configure_commit_types(config):
         include_emoji = config.get("include_emoji", True)
         include_type = config.get("include_type", True)
 
-        click.echo(click.style("Commit Types Configuration:", bold=True))
+        click.echo("\nCommit Types Configuration")
         click.echo(click.style(SEPARATOR, dim=True))
 
         if include_type and include_emoji:
@@ -299,38 +290,60 @@ def configure_commit_types(config):
             click.echo(f"Options: <type> is {OFF_RED}. <emoji> is {ON_GREEN}.")
         else:
             click.echo(f"Options: <type> is {OFF_RED}. <emoji> is {OFF_RED}.")
+        click.echo(click.style(SEPARATOR, dim=True))
 
+        # 커밋 타입 선택지 생성
+        type_choices = []
         for idx, (commit_type, emoji_code) in enumerate(config["commit_types"].items()):
             base_type = commit_type.split("_")[0]
             emoji_display = emojize_if_valid(emoji_code) if include_emoji else ""
-            click.echo(f"{idx + 1}. {base_type} {emoji_display}")
+            display_text = f"{base_type} {emoji_display}"
+            type_choices.append(Choice(value=str(idx + 1), name=display_text))
 
-        click.echo("a. + Add a new type")
-        click.echo("d. - Delete a type")
-        click.echo(click.style(SEPARATOR, dim=True))
+        # 액션 선택지 생성
+        action_choices = [
+            Choice(value="a", name="+ Add a new type"),
+            Choice(value="d", name="- Delete a type"),
+            Choice(value="b", name="Go back"),
+        ]
 
-        option = click.prompt(
-            click.style(
-                "Choose an option or enter number to select a type (or 'b' to go back)",
-                fg="blue",
-            ),
-            type=str,
-        ).lower()
+        # 모든 선택지를 하나의 리스트로 합치기
+        all_choices = type_choices + action_choices
 
-        if option in ["b", "q"]:
+        option = inquirer.fuzzy(
+            message="Select a commit type to edit or choose an action:",
+            choices=all_choices,
+            default=None,
+            border=True,
+            info=False,
+            instruction="(Type to search, use arrow keys and Enter to select)",
+            vi_mode=False,
+            match_exact=False,
+            long_instruction="↑↓ to move, Enter to select",
+            filter=lambda result: result if result else "",
+        ).execute()
+
+        if option == "b" or option == "q":
             break
 
+        if not option:
+            continue
+
         elif option == "a":
-            type_key = click.prompt(
-                click.style("Enter commit type key (e.g., feat, fix, ...):", fg="blue")
-            )
-            new_emoji = click.prompt(
-                click.style(
-                    "Enter emoji for new type (use :emoji: format, leave empty to skip)",
-                    fg="blue",
-                ),
+            type_key = inquirer.text(
+                message="Enter commit type key:",
+                instruction="e.g., feat, fix, ...",
+            ).execute()
+
+            if not type_key:
+                continue
+
+            new_emoji = inquirer.text(
+                message="Enter emoji for new type:",
+                instruction="Use :emoji: format, press Enter to skip",
                 default="",
-            )
+            ).execute()
+
             if type_key in config["commit_types"]:
                 suffix = 1
                 new_type_key = f"{type_key}_{suffix}"
@@ -345,52 +358,65 @@ def configure_commit_types(config):
             )
 
         elif option == "d":
-            delete_option = click.prompt(
-                click.style(
-                    "Enter the number of the commit type to delete (or 'b' to go back)",
-                    fg="blue",
-                ),
-                default="b",
-            )
-            if delete_option.lower() == "b":
-                continue
-            try:
-                delete_option = int(delete_option)
-                if 1 <= delete_option <= len(config["commit_types"]):
-                    type_key = list(config["commit_types"].keys())[delete_option - 1]
-                    confirm = click.confirm(
-                        f"Are you sure you want to delete '{type_key.split('_')[0]}'?",
-                        default=False,
-                    )
-                    if confirm:
-                        del config["commit_types"][type_key]
-                        click.echo(f"Deleted commit type '{type_key.split('_')[0]}'.")
-                else:
-                    click.echo(
-                        click.style(
-                            "Invalid option. Please choose a valid number.", fg="red"
-                        )
-                    )
-            except ValueError:
-                click.echo(
-                    click.style("Invalid input. Please enter a number.", fg="red")
+            delete_choices = [
+                Choice(
+                    value=str(idx),
+                    name=f"{commit_type.split('_')[0]} {emojize_if_valid(emoji_code) if include_emoji else ''}",
                 )
+                for idx, (commit_type, emoji_code) in enumerate(
+                    config["commit_types"].items()
+                )
+            ]
+            delete_choices.append(Choice(value="b", name="Go back"))
+
+            delete_option = inquirer.fuzzy(
+                message="Select a commit type to delete:",
+                choices=delete_choices,
+                default=None,
+                border=True,
+                info=False,
+                instruction="(Type to search, use arrow keys and Enter to select)",
+                vi_mode=False,
+                match_exact=False,
+                long_instruction="↑↓ to move, Enter to select",
+                filter=lambda result: result if result else "",
+            ).execute()
+
+            if delete_option == "b":
+                continue
+
+            if not delete_option:
+                continue
+
+            try:
+                delete_idx = int(delete_option)
+                type_key = list(config["commit_types"].keys())[delete_idx]
+                confirm = inquirer.confirm(
+                    message=f"Are you sure you want to delete '{type_key.split('_')[0]}'?",
+                    default=False,
+                ).execute()
+
+                if confirm:
+                    del config["commit_types"][type_key]
+                    click.echo(f"Deleted commit type '{type_key.split('_')[0]}'.")
+            except (ValueError, IndexError):
+                click.echo(click.style("Invalid selection.", fg="red"))
 
         else:
             try:
-                option = int(option)
-                if 1 <= option <= len(config["commit_types"]):
-                    type_key = list(config["commit_types"].keys())[option - 1]
+                option_idx = int(option) - 1
+                if 0 <= option_idx < len(config["commit_types"]):
+                    type_key = list(config["commit_types"].keys())[option_idx]
                     click.echo(
                         f"Editing commit type: {click.style(type_key.split('_')[0], fg='blue')} ({emojize_if_valid(config['commit_types'][type_key])})"
                     )
-                    new_type = click.prompt(
-                        click.style(
-                            f"Enter new name for {type_key.split('_')[0]} (leave empty to keep current):",
-                            fg="blue",
-                        ),
+
+                    new_type = inquirer.text(
+                        message=f"Enter new name for {type_key.split('_')[0]}:",
+                        instruction="Press Enter to keep current",
                         default="",
-                    )
+                    ).execute()
+
                     if new_type:
                         config["commit_types"][new_type] = config["commit_types"].pop(
                             type_key
@@ -402,13 +428,12 @@ def configure_commit_types(config):
                     else:
                         click.echo("Commit type name unchanged.")
 
-                    new_emoji = click.prompt(
-                        click.style(
-                            f"Enter new emoji for {type_key.split('_')[0]} (leave empty to keep current):",
-                            fg="blue",
-                        ),
+                    new_emoji = inquirer.text(
+                        message=f"Enter new emoji for {type_key.split('_')[0]}:",
+                        instruction="Use :emoji: format, press Enter to keep current",
                         default="",
-                    )
+                    ).execute()
+
                     if new_emoji:
                         config["commit_types"][type_key] = new_emoji
                         click.echo(
@@ -416,15 +441,7 @@ def configure_commit_types(config):
                         )
                     else:
                         click.echo("Commit Type Emoji unchanged.")
-                else:
-                    click.echo(
-                        click.style(
-                            "Invalid option. Please choose a valid number.", fg="red"
-                        )
-                    )
-            except ValueError:
-                click.echo(
-                    click.style("Invalid input. Please enter a number.", fg="red")
-                )
+            except (ValueError, IndexError):
+                click.echo(click.style("Invalid selection.", fg="red"))
 
         save_config(config)
