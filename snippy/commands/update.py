@@ -50,6 +50,7 @@ def update_snippy():
             )
             return
 
+        stop_animation.set()
         click.echo(
             f"\n🆕✨ Current version: {installed_version}, Latest version: {latest_version}"
         )
@@ -198,7 +199,7 @@ def version_check_in_background():
                     f"Run {click.style('`snippy update`', fg='bright_yellow', bold=True)} to update. 👋"
                 )
         except Exception:
-            pass  # Silently fail for background checks
+            pass
 
     thread = threading.Thread(target=check, daemon=True)
     thread.start()
