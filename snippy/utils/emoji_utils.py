@@ -20,6 +20,9 @@ def emojize_if_valid(emoji_code):
 def emojize_commit_types(commit_types):
     emoji = get_emoji_module()
     return {
-        key: emoji.emojize(value, language="alias")
+        key: {
+            "emoji": emoji.emojize(value["emoji"], language="alias"),
+            "description": value["description"],
+        }
         for key, value in commit_types.items()
     }
