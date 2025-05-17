@@ -49,7 +49,48 @@ def reset_command():
 
 @cli.command(name="update")
 def update_command():
+    click.echo(
+        click.style(
+            "Buy me a coffee! What do you think? 😝  @https://www.buymeacoffee.com/narashin",
+            fg="cyan",
+        )
+    )
+
+    # 항상 공지사항 출력
+    click.echo(click.style("\n⚠️  Notice", fg="yellow", bold=True))
+    click.echo(
+        click.style(
+            "If you're using version 3.1.0 or below, please run ",
+            fg="yellow",
+        )
+        + click.style("snippy reset", fg="yellow", bold=True)
+        + click.style(" after updating.", fg="yellow")
+    )
+    click.echo(
+        click.style(
+            "This is required to migrate to the new configuration format.",
+            fg="yellow",
+        )
+    )
+    click.echo()
     update_snippy()
+
+
+@cli.command(name="help")
+def help_command():
+    click.echo(
+        click.style(
+            "Buy me a coffee! What do you think? 😝  @https://www.buymeacoffee.com/narashin",
+            fg="cyan",
+        )
+    )
+    click.echo("\nSnippy! Templatize your git commit comments. <3")
+    click.echo("\nAvailable commands:")
+    click.echo("  run      - Start Snippy")
+    click.echo("  config   - Configure Snippy")
+    click.echo("  update   - Update Snippy")
+    click.echo("  reset    - Reset configuration to default values")
+    click.echo("  help     - Show this help message")
 
 
 @cli.command()
@@ -64,7 +105,7 @@ def run():
         example_commit = commit_template.replace("<type>", first_commit_type[0])
         if config.get("include_emoji", True):
             example_commit = example_commit.replace(
-                "<emoji>", emojize_if_valid(first_commit_type[1])
+                "<emoji>", emojize_if_valid(first_commit_type[1]["emoji"])
             )
         else:
             example_commit = example_commit.replace("<emoji>", "")
@@ -80,11 +121,11 @@ def run():
         emoji_code = ""
 
         if include_type and include_emoji:
-            filtered_commit_types = commit_types
+            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
         elif include_type and not include_emoji:
             filtered_commit_types = {k: "" for k in commit_types.keys()}
         elif include_emoji and not include_type:
-            filtered_commit_types = dict(commit_types.items())
+            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
         else:
             filtered_commit_types = {}
 
