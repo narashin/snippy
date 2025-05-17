@@ -27,12 +27,24 @@ OFF_RED = click.style("off", fg="red")
 
 # Commit Types
 RAW_COMMIT_TYPES = {
-    "feat": ":sparkles:",
-    "fix": ":bug:",
-    "docs": ":memo:",
-    "style": ":lipstick:",
-    "refactor": ":recycle:",
-    "perf": ":zap:",
-    "test": ":white_check_mark:",
-    "chore": ":wrench:",
+    "feat": {"emoji": ":sparkles:", "description": "새로운 기능 추가 / New Feature"},
+    "fix": {"emoji": ":bug:", "description": "버그 수정 / Bug Fix"},
+    "docs": {"emoji": ":memo:", "description": "문서 수정 / Documentation"},
+    "style": {
+        "emoji": ":lipstick:",
+        "description": "코드 포맷팅, 세미콜론 누락, 코드 변경이 없는 경우 / Code Style",
+    },
+    "refactor": {
+        "emoji": ":recycle:",
+        "description": "코드 리팩토링 / Code Refactoring",
+    },
+    "perf": {"emoji": ":zap:", "description": "성능 개선 / Performance Improvement"},
+    "test": {
+        "emoji": ":white_check_mark:",
+        "description": "테스트 코드 추가 또는 수정 / Test Code",
+    },
+    "chore": {
+        "emoji": ":wrench:",
+        "description": "빌드 프로세스 또는 보조 도구 및 라이브러리 변경 / Build Process or Auxiliary Tools",
+    },
 }

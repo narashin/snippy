@@ -10,6 +10,7 @@ Snippy is a CLI tool that helps you easily write Git commit messages. This tool 
 - 커밋 타입 선택 / Select commit types
 - 커밋 템플릿 구성 / Configure commit templates
 - 사용자 정의 커밋 타입 추가 및 삭제 / Add and delete custom commit types
+- 검색 기능을 통한 커밋 타입 선택 / Select commit types through search functionality
 
 ## 설치 방법 / How To Install
 
@@ -45,20 +46,20 @@ To write a commit message using Snippy, follow these steps:
 snippy
 ```
 
-2. 커밋 타입을 선택합니다. / Select a commit type.
+2. 커밋 타입을 검색하여 선택합니다. / Search and select a commit type.
 
 ```
 Select commit type:
 ----------------------------------------
-1. feat (✨)
-2. fix (🐛)
-3. docs (📝)
-4. style (💄)
-5. refactor (♻️)
-6. perf (⚡)
-7. test (✅)
-8. chore (🔧)
-Choose an option or enter number to select a type:
+Type to search commit types...
+feat (✨) - A new feature
+fix (🐛) - A bug fix
+docs (📝) - Documentation only changes
+style (💄) - Changes that do not affect the meaning of the code
+refactor (♻️) - A code change that neither fixes a bug nor adds a feature
+perf (⚡) - A code change that improves performance
+test (✅) - Adding missing tests or correcting existing tests
+chore (🔧) - Changes to the build process or auxiliary tools
 ```
 
 3. 커밋 메시지를 입력합니다. / Enter the commit message.
@@ -114,6 +115,16 @@ snippy reset
 snippy의 설정을 처음으로 되돌릴 수 있습니다.
 
 You can reset Snippy's configuration values to their default settings.
+
+## 업데이트 / Update
+
+```
+snippy update
+```
+
+Snippy를 최신 버전으로 업데이트할 수 있습니다.
+
+You can update Snippy to the latest version.
 
 ## 기여 / Contributing
 

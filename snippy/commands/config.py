@@ -44,7 +44,10 @@ def configure(config):
 
         choices = [
             Choice(value="t", name="📄 Edit Template (Toggle emoji and type)"),
-            Choice(value="c", name="✏️  Configure Commit Types"),
+            Choice(
+                value="c",
+                name="✏️  Configure Commit Types (Emoji, Commit type, Description)",
+            ),
             Choice(value="r", name="🧹  Reset to default"),
             Separator(),
             Choice(value="q", name="Quit"),
@@ -90,7 +93,7 @@ def show_current_configuration(config):
 
         if include_emoji:
             example_commit = example_commit.replace(
-                "<emoji>", emojize_if_valid(first_commit_type[1])
+                "<emoji>", emojize_if_valid(first_commit_type[1]["emoji"])
             )
         else:
             example_commit = example_commit.replace("<emoji>", "")
@@ -117,14 +120,18 @@ def show_current_configuration(config):
     click.echo()
 
     if include_type and include_emoji:
-        for commit_type, emoji_code in config["commit_types"].items():
-            print(f"  {commit_type.split('_')[0]}: {emojize_if_valid(emoji_code)}")
+        for commit_type, commit_data in config["commit_types"].items():
+            print(
+                f"  {commit_type.split('_')[0]}: {emojize_if_valid(commit_data['emoji'])} - {commit_data['description']}"
+            )
     elif include_type:
-        for commit_type in config["commit_types"].keys():
-            print(f"  {commit_type.split('_')[0]}")
+        for commit_type, commit_data in config["commit_types"].items():
+            print(f"  {commit_type.split('_')[0]} - {commit_data['description']}")
     elif include_emoji:
-        for emoji_code in config["commit_types"].values():
-            print(f"  {emojize_if_valid(emoji_code)}")
+        for commit_data in config["commit_types"].values():
+            print(
+                f"  {emojize_if_valid(commit_data['emoji'])} - {commit_data['description']}"
+            )
 
     click.echo(click.style(SEPARATOR, dim=True))
 
@@ -143,7 +150,7 @@ def show_current_template(config):
             example_commit = example_commit.replace("<type>", "")
         if include_emoji:
             example_commit = example_commit.replace(
-                "<emoji>", emojize_if_valid(first_commit_type[1])
+                "<emoji>", emojize_if_valid(first_commit_type[1]["emoji"])
             )
         else:
             example_commit = example_commit.replace("<emoji>", "")
@@ -274,6 +281,22 @@ def configure_template(config):
 def configure_commit_types(config):
     if "commit_types" not in config:
         config["commit_types"] = emojize_commit_types(RAW_COMMIT_TYPES)
+    else:
+        # 기존 설정 파일의 데이터 구조를 새로운 구조로 변환
+        new_commit_types = {}
+        for commit_type, value in config["commit_types"].items():
+            if isinstance(value, str):
+                # 기존 구조에서 새로운 구조로 변환
+                new_commit_types[commit_type] = {
+                    "emoji": value,
+                    "description": RAW_COMMIT_TYPES.get(commit_type, {}).get(
+                        "description", ""
+                    ),
+                }
+            else:
+                # 이미 새로운 구조인 경우
+                new_commit_types[commit_type] = value
+        config["commit_types"] = new_commit_types
 
     while True:
         include_emoji = config.get("include_emoji", True)
@@ -294,10 +317,14 @@ def configure_commit_types(config):
 
         # 커밋 타입 선택지 생성
         type_choices = []
-        for idx, (commit_type, emoji_code) in enumerate(config["commit_types"].items()):
+        for idx, (commit_type, commit_data) in enumerate(
+            config["commit_types"].items()
+        ):
             base_type = commit_type.split("_")[0]
-            emoji_display = emojize_if_valid(emoji_code) if include_emoji else ""
-            display_text = f"{base_type} {emoji_display}"
+            emoji_display = (
+                emojize_if_valid(commit_data["emoji"]) if include_emoji else ""
+            )
+            display_text = f"{base_type} {emoji_display} - {commit_data['description']}"
             type_choices.append(Choice(value=str(idx + 1), name=display_text))
 
         # 액션 선택지 생성
@@ -344,6 +371,12 @@ def configure_commit_types(config):
                 default="",
             ).execute()
 
+            new_description = inquirer.text(
+                message="Enter description for new type:",
+                instruction="Describe when to use this commit type",
+                default="",
+            ).execute()
+
             if type_key in config["commit_types"]:
                 suffix = 1
                 new_type_key = f"{type_key}_{suffix}"
@@ -352,7 +385,10 @@ def configure_commit_types(config):
                     new_type_key = f"{type_key}_{suffix}"
                 type_key = new_type_key
 
-            config["commit_types"][type_key] = new_emoji
+            config["commit_types"][type_key] = {
+                "emoji": new_emoji,
+                "description": new_description,
+            }
             click.echo(
                 f"Added new type: {click.style(type_key.split('_')[0], fg='green')} with emoji: {emojize_if_valid(new_emoji)}"
             )
@@ -361,9 +397,9 @@ def configure_commit_types(config):
             delete_choices = [
                 Choice(
                     value=str(idx),
-                    name=f"{commit_type.split('_')[0]} {emojize_if_valid(emoji_code) if include_emoji else ''}",
+                    name=f"{commit_type.split('_')[0]} {emojize_if_valid(commit_data['emoji']) if include_emoji else ''} - {commit_data['description']}",
                 )
-                for idx, (commit_type, emoji_code) in enumerate(
+                for idx, (commit_type, commit_data) in enumerate(
                     config["commit_types"].items()
                 )
             ]
@@ -408,7 +444,7 @@ def configure_commit_types(config):
                 if 0 <= option_idx < len(config["commit_types"]):
                     type_key = list(config["commit_types"].keys())[option_idx]
                     click.echo(
-                        f"Editing commit type: {click.style(type_key.split('_')[0], fg='blue')} ({emojize_if_valid(config['commit_types'][type_key])})"
+                        f"Editing commit type: {click.style(type_key.split('_')[0], fg='blue')} ({emojize_if_valid(config['commit_types'][type_key]['emoji'])})"
                     )
 
                     new_type = inquirer.text(
@@ -435,12 +471,27 @@ def configure_commit_types(config):
                     ).execute()
 
                     if new_emoji:
-                        config["commit_types"][type_key] = new_emoji
+                        config["commit_types"][type_key]["emoji"] = new_emoji
                         click.echo(
                             f"Updated {type_key.split('_')[0]} to {emojize_if_valid(new_emoji)}"
                         )
                     else:
                         click.echo("Commit Type Emoji unchanged.")
+
+                    new_description = inquirer.text(
+                        message=f"Enter new description for {type_key.split('_')[0]}:",
+                        instruction="Press Enter to keep current",
+                        default=config["commit_types"][type_key]["description"],
+                    ).execute()
+
+                    if new_description:
+                        config["commit_types"][type_key][
+                            "description"
+                        ] = new_description
+                        click.echo(f"Updated description to: {new_description}")
+                    else:
+                        click.echo("Description unchanged.")
+
             except (ValueError, IndexError):
                 click.echo(click.style("Invalid selection.", fg="red"))
 

@@ -7,14 +7,16 @@ from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.git_utils import get_subprocess_module, warn_if_no_staged_files
 
 
-def format_commit_type(base_type, emoji_code, include_type, include_emoji):
+def format_commit_type(base_type, commit_data, include_type, include_emoji):
     if include_type and include_emoji:
-        return f"{base_type} ({emojize_if_valid(emoji_code)})"
+        return f"{base_type} ({emojize_if_valid(commit_data['emoji'])}) - {commit_data['description']}"
     elif include_type:
-        return base_type
+        return f"{base_type} - {commit_data['description']}"
     elif include_emoji:
-        return emojize_if_valid(emoji_code)
-    return base_type
+        return (
+            f"{emojize_if_valid(commit_data['emoji'])} - {commit_data['description']}"
+        )
+    return f"{base_type} - {commit_data['description']}"
 
 
 def select_commit_type(
@@ -25,10 +27,12 @@ def select_commit_type(
     show_delete=False,
 ):
     choices = []
-    for commit_type, emoji_code in commit_types.items():
+    for commit_type, commit_data in commit_types.items():
         base_type = commit_type.split("_")[0]
-        display = format_commit_type(base_type, emoji_code, include_type, include_emoji)
-        choices.append({"name": display, "value": (commit_type, emoji_code)})
+        display = format_commit_type(
+            base_type, commit_data, include_type, include_emoji
+        )
+        choices.append({"name": display, "value": (commit_type, commit_data["emoji"])})
 
     if show_add_new:
         choices.append(Separator())

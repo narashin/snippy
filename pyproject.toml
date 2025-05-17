@@ -12,6 +12,7 @@ emoji = "^2.14.0"
 prompt-toolkit = "^3.0.48"
 questionary = "^2.1.0"
 inquirerpy = "^0.3.4"
+packaging = "^24.0"
 
 [tool.poetry.scripts]
 snippy = "snippy.main:cli"
