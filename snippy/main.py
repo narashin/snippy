@@ -56,32 +56,23 @@ def update_command():
         )
     )
 
-    # 버전 체크 및 공지사항
-    current_version = load_installed_version()
-    if current_version:
-        try:
-            from packaging import version
-
-            if version.parse(current_version) <= version.parse("3.1.0"):
-                click.echo(click.style("\n⚠️  Notice", fg="yellow", bold=True))
-                click.echo(
-                    click.style(
-                        "If you're using version 3.1.0 or below, please run ",
-                        fg="yellow",
-                    )
-                    + click.style("snippy reset", fg="yellow", bold=True)
-                    + click.style(" after updating.", fg="yellow")
-                )
-                click.echo(
-                    click.style(
-                        "This is required to migrate to the new configuration format.",
-                        fg="yellow",
-                    )
-                )
-                click.echo()
-        except ImportError:
-            pass  # packaging 모듈이 없는 경우 무시
-
+    # 항상 공지사항 출력
+    click.echo(click.style("\n⚠️  Notice", fg="yellow", bold=True))
+    click.echo(
+        click.style(
+            "If you're using version 3.1.0 or below, please run ",
+            fg="yellow",
+        )
+        + click.style("snippy reset", fg="yellow", bold=True)
+        + click.style(" after updating.", fg="yellow")
+    )
+    click.echo(
+        click.style(
+            "This is required to migrate to the new configuration format.",
+            fg="yellow",
+        )
+    )
+    click.echo()
     update_snippy()
 
 
@@ -130,17 +121,14 @@ def run():
         emoji_code = ""
 
         if include_type and include_emoji:
-            filtered_commit_types = commit_types
+            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
         elif include_type and not include_emoji:
             filtered_commit_types = {
                 k: {"emoji": "", "description": v["description"]}
                 for k, v in commit_types.items()
             }
         elif include_emoji and not include_type:
-            filtered_commit_types = {
-                k: {"emoji": v["emoji"], "description": v["description"]}
-                for k, v in commit_types.items()
-            }
+            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
         else:
             filtered_commit_types = {}
 
