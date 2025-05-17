@@ -121,14 +121,20 @@ def run():
         emoji_code = ""
 
         if include_type and include_emoji:
-            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
+            filtered_commit_types = {
+                k: {"emoji": v["emoji"], "description": v["description"]}
+                for k, v in commit_types.items()
+            }
         elif include_type and not include_emoji:
             filtered_commit_types = {
                 k: {"emoji": "", "description": v["description"]}
                 for k, v in commit_types.items()
             }
         elif include_emoji and not include_type:
-            filtered_commit_types = {k: v["emoji"] for k, v in commit_types.items()}
+            filtered_commit_types = {
+                k: {"emoji": v["emoji"], "description": v["description"]}
+                for k, v in commit_types.items()
+            }
         else:
             filtered_commit_types = {}
 
