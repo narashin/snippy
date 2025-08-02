@@ -13,6 +13,10 @@ from snippy.commands.update import (
 from snippy.utils.emoji_utils import emojize_if_valid
 from snippy.utils.io_utils import run_async
 
+# Reusable option for run
+def click_run_option():
+    return click.option("-m", "--message", default=None, help="Commit message to use.")
+
 
 def lazy_version_fetch():
     return (
@@ -27,12 +31,17 @@ def lazy_version_fetch():
     version=lazy_version_fetch(),
     prog_name="Snippy",
 )
+@click_run_option()
 @click.pass_context
-def cli(ctx):
+def cli(ctx, message):
     """Snippy! Templatize your git commit comments. <3"""
 
+    # Store message in context for subcommands
+    ctx.ensure_object(dict)
+    ctx.obj['message'] = message
+
     if ctx.invoked_subcommand is None:
-        run()
+        run_internal(message)
 
 
 @cli.command(name="config")
@@ -93,8 +102,19 @@ def help_command():
     click.echo("  help     - Show this help message")
 
 
+
+
+
 @cli.command()
-def run():
+@click_run_option()
+@click.pass_context
+def run(ctx, message):
+    # Use message from context if available, otherwise use the option
+    if ctx.obj and ctx.obj.get('message'):
+        message = ctx.obj.get('message')
+    run_internal(message)
+
+def run_internal(message):
     try:
         config = run_async(load_config_async)
 
@@ -153,10 +173,14 @@ def run():
             else:
                 commit_type, emoji_code = result
 
-        subject = questionary.text("Enter commit message:").ask()
-        if subject is None:
-            click.echo("Commit cancelled.")
-            sys.exit(1)
+        # Use provided message or prompt for one
+        if message:
+            subject = message
+        else:
+            subject = questionary.text("Enter commit message:").ask()
+            if subject is None:
+                click.echo("Commit cancelled.")
+                sys.exit(1)
 
         if not subject:
             generated_message = commit_template
